@@ -1,0 +1,366 @@
+---
+layout: default
+title: Manuscript
+---
+<h3>Introduction</h3>
+<li>Who are we, where do we work and what experience do we have with Android? </li>
+<li>What are we presenting today? We will live code an application and show how the different components work. The app will allow the user to search for a Spotify track, and play the found track on a device</li>
+<li> Afterwards, you will do assignments where the goal is to create a Twitter like app which communicates with a REST API</li>
+<li> Please ask questions.</li>
+<li> How many have brought devices/installed emulators?  </li>
+<li> If you do not have a device or an emulator, join those who do.</li>
+
+<h3>Main</h3>
+<ol>
+	<li>Open Android Studio. Decribe that it is the standard IDE choice. Create an empty project. Briefly mention what an Activity is, along with the xml layout.</li>
+	<li>Explain Activities (<a href="android-app-structure-and-components.html"> App Structure And Components</a>)</li>
+    <li>Explain the Android Manifest and show that we have registred our Activity here.</li>
+	<li>Explain layouts and layout controls (<a href="common-view-controls.html"> Common View Controls</a>), (<a href="view-layout.html"> View Layout</a>))</li>
+	<li>Explain the UI builder</li>
+    <li>Run Hello World app and explain debugging.</li>
+	<li>Update the MainActivity. It will display an input text field and a button. </li>
+    <li>Create the layout files and controls for the activity.</li>
+    <li>Create a click listener for the button. This is where we want to initiate the search. For now, add a Toast, and run the app.
+    </li>
+    <li>Replace the Toast with an Intent which we will use to start the TracksActivity. Describe intents</li>
+    <li>Create the TracksActivity. TracksActivity will perform the actual search, and display a list containing the search results. Add entries to the Android Manifest</li>
+    <li>Start TracksActivity from MainActivity, and also pass the search input as an extra. Retrieve the bundle in TracksActivity.</li>
+    <li>Explain that we now want to set up a service for performing the search. Explain AsyncTasks (<a href="working-in-the-background.html"> Working In the Background.</a>)
+        Say that for this course we will use Retrofit, and provide Retrofit basics (background thread, GSON, etc). Add Gradle dependency:
+        <p><code> compile 'com.squareup.retrofit:retrofit:1.9.0'</code></p></li>
+	<li>Add SpotifySearchService which is the Retrofit interface. Maybe live code this. Also, add URL as a final variable to the MainActivity.
+        <p><code>"/search/1/track.json"</code></p>
+        <p><code>http://ws.spotify.com/</code></p>
+    </li>
+    <li> Create the Result object and explain its connection to the JSON structure returned by the Spotify API. It will hold a list of tracks.</li>
+    <li> Create the Artist and Track domain objects. Copy these</li>
+    <li> Create an instance of RestAdapter, and use this to instantiate the SpotifySearchService. Add the rest call to the created click listener. </li>
+    <li> Run the app and perform a search. Add a Toast to the success callback, and also log if success or error. Remember to log error</li>
+
+    <p><code> PAUSE / SWITCH PRESENTER</code></p></li>
+
+	<li>Do not add internet permission until app has run and failed. Explain the need for permissions</li> 
+	{% highlight xml %}
+	    <uses-permission android:name="android.permission.INTERNET" />
+	{% endhighlight %}
+	<li>Run app again and see that the Toast pops up</li>
+    
+    <li>Remove <code>Toast</code> and explain that we now want to display the data in a list </li>
+    <li> Explain that a <code>RecyclerView</code> can be used for displaying the results (<a href="list-recycler-view.html"> Lists and RecyclerView)</a> </li>
+    <code>compile 'com.android.support:recyclerview-v7:+'</code> <code> compile 'com.android.support:cardview-v7:+'</code>
+    <li> Set up a RecyclerView, and populate the RecyclerViewAdapter fields with properties from the Track domain objects</li>
+    <li>Add a click handler for the list elements, where clicks will start Spotify and play song. Explain the use of implicit intents. An example
+        can be opening Google Maps in Chrome, where the user is presented with options for which app to open maps in.</li>
+</ol>
+
+<h3> MainActivity</h3>
+{% highlight java %}
+public class MainActivity extends ActionBarActivity {
+    private Button searchButton;
+    private EditText searchInputView;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        searchButton = (Button) findViewById(R.id.search_button);
+        searchInputView = (EditText) findViewById(R.id.input_view);
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String input = searchInputView.getText().toString();
+                Intent intent = new Intent(MainActivity.this, TracksActivity.class);
+                intent.putExtra("input", input);
+                startActivity(intent);
+            }
+        });
+    }
+}
+{% endhighlight %}
+{% highlight java %}
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/input_view"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/search_button_text"
+        android:id="@+id/search_button"
+        android:layout_below="@id/input_view"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"/>
+</RelativeLayout>
+
+{% endhighlight %}
+
+
+
+
+<h3> Retrofit SpotifySearchService</h3>
+{% highlight java %}
+public interface SpotifyService {
+    @GET("/search/1/track.json")
+    void searchForTrack(@Query("q") String input, Callback<TrackResponse> trackResponse);
+}
+{% endhighlight %}
+
+
+{% highlight java %}
+private static final String BASE_URL = "http://ws.spotify.com/";
+RestAdapter adapter = new RestAdapter.Builder()
+             .setEndpoint("http://ws.spotify.com/")
+             .build();
+SpotifyService spotifyService = adapter.create(SpotifyService.class);
+{% endhighlight %}
+
+<h3> TrackResponse, Track and Artist classes</h3>
+
+{% highlight java %}
+public class TrackResponse {
+    private List<Track> tracks;
+
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void setTracks(List<Track> tracks) {
+        this.tracks = tracks;
+    }
+}
+	{% endhighlight %}
+
+   {% highlight java %}
+
+public class Track {
+    private String name;
+    private List<Artist> artists;
+    private String href;
+
+    public String getHref() {
+        return href;
+    }
+
+    public void setHref(String href) {
+        this.href = href;
+    }
+
+    public List<Artist> getArtists() {
+        return artists;
+    }
+
+    public void setArtists(List<Artist> artists) {
+        this.artists = artists;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+{% endhighlight %}
+
+{% highlight java %}
+public class Artist {
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+{% endhighlight %}
+
+
+<h3>RecyclerViewAdapter</h3>
+Adapter for displaying the search results in the RecyclerView
+{% highlight java %}
+
+public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TrackViewHolder> {
+    private final List<Track> tracks;
+    private final Context context;
+    private final ClickedTrackListener listener;
+
+    public TracksAdapter(Context context, ClickedTrackListener listener, List<Track> tracks) {
+        this.tracks = tracks;
+        this.context = context;
+        this.listener = listener;
+    }
+
+    @Override
+    public TrackViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        View itemView = LayoutInflater.from(context).inflate(R.layout.item_track, viewGroup, false);
+        final TrackViewHolder trackViewHolder = new TrackViewHolder(itemView);
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Track track = tracks.get(trackViewHolder.getPosition());
+                listener.clickedTrack(track);
+            }
+        });
+        return trackViewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(TrackViewHolder trackViewHolder, int i) {
+        Track track = tracks.get(i);
+        trackViewHolder.trackName.setText(track.getName());
+    }
+
+    @Override
+    public int getItemCount() {
+        return tracks.size();
+    }
+
+    public static class TrackViewHolder extends RecyclerView.ViewHolder {
+
+        private final TextView trackName;
+
+        public TrackViewHolder(View itemView) {
+            super(itemView);
+            trackName = (TextView) itemView.findViewById(R.id.trackName);
+        }
+    }
+}
+
+{% endhighlight %}
+{% highlight xml %}
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/trackName"/>
+</LinearLayout>
+{% endhighlight %}
+
+<h3> TracksActivity</h3>
+{% highlight java %}
+public class TracksActivity extends ActionBarActivity implements ClickedTrackListener {
+
+    private RecyclerView trackList;
+    private List<Track> tracks = new ArrayList<>();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_tracks);
+
+        trackList = (RecyclerView) findViewById(R.id.trackList);
+        trackList.setLayoutManager(new LinearLayoutManager(this));
+        final TracksAdapter tracksAdapter = new TracksAdapter(this, this, tracks);
+        trackList.setAdapter(tracksAdapter);
+
+        Bundle extras = getIntent().getExtras();
+        String input = extras.getString("input");
+
+        RestAdapter adapter = new RestAdapter.Builder()
+                .setEndpoint("http://ws.spotify.com/")
+                .build();
+        SpotifyService spotifyService = adapter.create(SpotifyService.class);
+
+        spotifyService.searchForTrack(input, new Callback<TrackResponse>() {
+            @Override
+            public void success(TrackResponse trackResponse, Response response) {
+                tracks.clear();
+                tracks.addAll(trackResponse.getTracks());
+                tracksAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Toast.makeText(TracksActivity.this, "Failure", Toast.LENGTH_SHORT).show();
+                Log.e("search", "error", error);
+            }
+        });
+    }
+
+    @Override
+    public void clickedTrack(Track track) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(track.getHref()));
+        startActivity(intent);
+    }
+}
+{% endhighlight %}
+{% highlight java %}
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:foo="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="no.bekk.liverpool.TracksActivity">
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/trackList">
+        </android.support.v7.widget.RecyclerView>
+
+</RelativeLayout>
+
+{% endhighlight %}
+
+
+{% highlight json %}
+{
+  "info": {
+    "num_results": 1,
+    "limit": 100,
+    "offset": 0,
+    "query": "\"godset fra drammen\"",
+    "type": "track",
+    "page": 1
+  },
+  "tracks": [
+    {
+      "album": {
+        "released": "2008",
+        "href": "spotify:album:7nrjbBpy8yrueDbKCBY6Ef",
+        "name": "2 x femogførr",
+        "availability": {
+          "territories": "AD AR AT AU BE BG BO BR CA CH CL CO CR CY CZ DE DK DO EC EE ES FI FR GB GR GT HK HN HR HU IE IS IT LI LT LU LV MC MT MX MY NI NL NO NZ PA PE PH PL PT PY RO SE SG SI SK SV TR TW US UY"
+        }
+      },
+      "name": "Godset fra Drammen",
+      "popularity": "0.36",
+      "external-ids": [
+        {
+          "type": "isrc",
+          "id": "NOFFM0897080"
+        }
+      ],
+      "length": 258.786,
+      "href": "spotify:track:67jdp9WXPR3ihTic9WXwmG",
+      "artists": [
+        {
+          "href": "spotify:artist:4AiqdizfguNQoWQ5N6Aaza",
+          "name": "C-laget"
+        }
+      ],
+      "track-number": "8"
+    }
+  ]
+}
+
+{% endhighlight %}
+

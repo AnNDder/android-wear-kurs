@@ -1,0 +1,19 @@
+{% assign items = include.items | split: ' ' %}
+<ul class="nav nav-pills nav-stacked">
+{% for item in items %}
+  {% assign item_url = item | prepend:'/pages/' | append:'.html' %}
+
+  {% if item_url == page.url %}
+    {% assign c = 'active' %}
+  {% else %}
+    {% assign c = '' %}
+  {% endif %}
+
+  {% for p in site.pages %}
+    {% if p.url == item_url %}
+      <li class="{{ c }}"><a href="{{ site.baseurl }}{{ p.url }}">{{ p.title }}</a></li>
+    {% endif %}
+  {% endfor %}
+
+{% endfor %}  
+</ul>

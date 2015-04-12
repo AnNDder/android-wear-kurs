@@ -1,0 +1,126 @@
+---
+layout: default
+title: Lists and RecyclerView
+---
+
+When we work with lists in Android, we first create a model to hold the data we want to display:
+{% highlight java %}
+public class Message {
+    private DateTime date;
+    private String from, message;
+
+    public Message(String from, String message, DateTime date) {
+        this.date = date;
+        this.from = from;
+        this.message = message;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public DateTime getDate() {
+        return date;
+    }
+}
+{% endhighlight %}
+Then, we create a layout xml file used for each message in the list. The views you declare here will end up in each row of the list, and you will be populate each row with the right data. We place this file in
+<code>res/layout/item_message.xml</code>.
+
+{% highlight xml %}
+<?xml version="1.0" encoding="utf-8"?>
+
+    <RelativeLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:padding="10dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvFrom"
+                android:text="From:"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvMessage"
+                android:text="Message body"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvDate"
+                android:text="Timestamp"/>
+        </RelativeLayout>
+{% endhighlight %}
+For displaying data in lists, we use what is called a <code>RecyclerView</code>. It uses an <code>Adapter</code> to control the display of each item in the list by asking you to first create a view for each position, and then define a way to update these views for the data at each position. We use a helper object called a <code>ViewHolder</code> that stores references to all the views we need for each row, e.g. a TextView for displaying an item name and a button for taking some action. We create this object in <code>onCreateViewHolder</code> using a <code>LayoutInflater</code> to create the item layout, and then <code>findViewById</code> to obtain references to the subviews. In <code>onBindViewHolder</code> we use the ViewHolder to get the stored TextView for this particular row and update the text displayed to the message text for this position in the list.
+
+{% highlight java %}
+ppublic class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.MessagesViewHolder> {
+    private LayoutInflater inflater;
+    private List<Message> messages;
+
+    public MessagesAdapter(LayoutInflater inflater, List<Message> messages) {
+        this.inflater = inflater;
+        this.messages = messages;
+    }
+
+    @Override
+    public MessagesViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View itemMessage = inflater.inflate(R.layout.item_message, parent, false);
+        MessagesViewHolder messagesViewHolder = new MessagesViewHolder(itemMessage, tapDelegate, null);
+        messagesViewHolder.view = itemMessage;
+        messagesViewHolder.from = (TextView) itemMessage.findViewById(R.id.tvFrom);
+        messagesViewHolder.message = (TextView) itemMessage.findViewById(R.id.tvMessage);
+        messagesViewHolder.date = (TextView) itemMessage.findViewById(R.id.tvDate);
+
+        return messagesViewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(MessagesViewHolder holder, int position) {
+        Message message = messages.get(position);
+        holder.from.setText(message.getFrom());
+        holder.message.setText(message.getMessage());
+        holder.date.setText(message.getDateTimeString());
+        holder.position = position;
+    }
+
+    @Override
+    public int getItemCount() {
+        return messages.size();
+    }
+
+    public static class MessagesViewHolder extends RecyclerView.ViewHolder {
+        View view;
+        TextView from, message, date;
+        int position;
+
+        public MessagesViewHolder(View itemView) {
+            super(itemView);
+            this.view = itemView;
+        }
+    }
+}
+{% endhighlight %}
+
+The <code>MessagesViewHolder</code> caches the view elements for quicker access. The <code>MessagesAdapter</code> provides access to the data set, as well as provides the correct view elements. In our example this is seen by the <code>itemMessage.findViewById()</code> calls.
+
+We also need a <code>LayoutManager</code>, for the layout of child views. To display a list, the <code>LinearLayoutManager</code> is the chosen layout manager. It can display items either vertically or horizontally.
+
+{% highlight java %}
+myRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+{% endhighlight %}
+
+In the activity where we want to display a list, we get the <code>RecyclerView</code> from the activity layout using the id <code>R.id.messageList</code> and set it to use our adapter and a LayoutManager. 
+
+{% highlight java %}
+ArrayList<Message> messages = new ArrayList<Message>();
+RecyclerView msgView = (RecyclerView) findViewById(R.id.messageList);
+msgView.setLayoutManager(new LinearLayoutManager(this));
+MessagesAdapter msgAdapter = new MessagesAdapter(this.getLayoutInflater(), messages, this, this);
+msgView.setAdapter(msgAdapter);
+{% endhighlight %}
