@@ -18,18 +18,44 @@
         <div class="row-fluid">
           <div class="span8">
             <h1 class="page-header">Komponenter</h1>
-            <h2> Hvordan fungerer det? </h2>
-En Android Wear app kan lages både som en stand alone app og som en modul i et prosjekt bestående av flere moduler. Dersom den er sistnevnte vil installasjon av klokkemodulen skje automatisk når den håndholdte modulen installeres på for eksempel en telefon. Den er på den måten et tillegg til hovedfunksjonaliteten som tilbys gjennom den håndholdte modulen. Et unntak er under utvikling. Da vil man installere klokkemodulen direkte via USB eller Bluetooth. For hvordan dette gjøres, se (<a href="installasjonsveiledning.html">installasjonsveiledningen</a>). Dersom den er en stand alone app vil den installeres direkte når man laster den ned fra Google Play, uten å måtte installere en håndholdt modul først. Den vil dermed ikke dukke opp på den 
+            En Android Wear app kan lages både som en stand alone app og som en modul i et prosjekt bestående av flere moduler. Dersom den er sistnevnte vil installasjon av klokkemodulen skje automatisk når den håndholdte modulen installeres på for eksempel en telefon. Den er på den måten et tillegg til hovedfunksjonaliteten som tilbys gjennom den håndholdte modulen. Et unntak er under utvikling. Da vil man installere klokkemodulen direkte via USB eller Bluetooth. For hvordan dette gjøres, se <a href="installasjonsveiledning.html">installasjonsveiledningen</a>. Dersom den er en stand alone app vil den installeres direkte når man laster den ned fra Google Play, uten å måtte installere en håndholdt modul først. Den vil dermed ikke dukke opp på den 
 håndholdte enheten som en applikasjon.
 
-// Få inn en enkel figur her
-<h2>Layout</h2>
-I Android Wear kan man velge å ha én eller flere layoutfiler. Det optimale er å ha én for firkantede skjermer og én for runde skjermer, for å sikre at all tilgjengelig skjermplass blir utnyttet. I Android generelt blir view skrevet i XML.
+<h3>Layout</h3>
+I Android blir views skrevet i XML.
 
-// Eksempel på begge layoutfiler
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;RelativeLayout</span> <span class="na">xmlns:android=</span><span class="s">&quot;http://schemas.android.com/apk/res/android&quot;</span>
+    <span class="na">xmlns:tools=</span><span class="s">&quot;http://schemas.android.com/tools&quot;</span> <span class="na">android:layout_width=</span><span class="s">&quot;match_parent&quot;</span>
+    <span class="na">android:layout_height=</span><span class="s">&quot;match_parent&quot;</span> <span class="na">tools:context=</span><span class="s">&quot;.MainActivity&quot;</span> <span class="na">tools:deviceIds=</span><span class="s">&quot;wear_round&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;TextView</span> <span class="na">android:id=</span><span class="s">&quot;@+id/text&quot;</span> <span class="na">android:layout_width=</span><span class="s">&quot;wrap_content&quot;</span>
+        <span class="na">android:layout_height=</span><span class="s">&quot;wrap_content&quot;</span> <span class="na">android:layout_centerHorizontal=</span><span class="s">&quot;true&quot;</span>
+        <span class="na">android:layout_centerVertical=</span><span class="s">&quot;true&quot;</span> <span class="na">android:text=</span><span class="s">&quot;Hello World&quot;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/RelativeLayout&gt;</span></code></pre></div>
+Når det gjelder Android Wear kan man velge å ha én eller flere layoutfiler. Det optimale er å ha én for firkantede skjermer og én for runde skjermer, for å sikre at all tilgjengelig skjermplass blir utnyttet. Det er så opp til operativsystemet å velge riktig fil basert på enheten det skal vises på. Dette gjøres ved hjelp av en såkalt <code>WatchViewStub</code>, som deklareres i XML og brukes i Java-koden.
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;android.support.wearable.view.WatchViewStub</span>
+    <span class="na">xmlns:android=</span><span class="s">&quot;http://schemas.android.com/apk/res/android&quot;</span>
+    <span class="na">xmlns:app=</span><span class="s">&quot;http://schemas.android.com/apk/res-auto&quot;</span>
+    <span class="na">xmlns:tools=</span><span class="s">&quot;http://schemas.android.com/tools&quot;</span> <span class="na">android:id=</span><span class="s">&quot;@+id/watch_view_stub&quot;</span>
+    <span class="na">android:layout_width=</span><span class="s">&quot;match_parent&quot;</span> <span class="na">android:layout_height=</span><span class="s">&quot;match_parent&quot;</span>
+    <span class="na">app:rectLayout=</span><span class="s">&quot;@layout/rect_activity_main&quot;</span> <span class="na">app:roundLayout=</span><span class="s">&quot;@layout/round_activity_main&quot;</span>
+    <span class="na">tools:context=</span><span class="s">&quot;.MainActivity&quot;</span>
+    <span class="na">tools:deviceIds=</span><span class="s">&quot;wear&quot;</span><span class="nt">&gt;&lt;/android.support.wearable.view.WatchViewStub&gt;</span></code></pre></div>
 
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="o">...</span>
+        <span class="kd">final</span> <span class="n">WatchViewStub</span> <span class="n">stub</span> <span class="o">=</span> <span class="o">(</span><span class="n">WatchViewStub</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">watch_view_stub</span><span class="o">);</span>
+        <span class="n">stub</span><span class="o">.</span><span class="na">setOnLayoutInflatedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">WatchViewStub</span><span class="o">.</span><span class="na">OnLayoutInflatedListener</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onLayoutInflated</span><span class="o">(</span><span class="n">WatchViewStub</span> <span class="n">stub</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mTextView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">stub</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+<span class="o">...</span></code></pre></div>
+I eksempelet vist ovenfor ser vi at det i XML-filen spesifiseres at vi har en layoutfil for firkantede og en for runde skjermer.
+I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra den av disse to som er i bruk.
 
-<h2>Activity</h2>
+<h3>Activity</h3>
 En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
 
 Nedenfor er et eksempel på <code>onCreate()</code>. Her vil alle komponenter man skal bruke i activitien settes opp, og man bruker <code>setContentView()</code> for å koble til et view.
@@ -41,19 +67,11 @@ Nedenfor er et eksempel på <code>onCreate()</code>. Her vil alle komponenter ma
     <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
         <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
         <span class="n">setContentView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
-        <span class="kd">final</span> <span class="n">WatchViewStub</span> <span class="n">stub</span> <span class="o">=</span> <span class="o">(</span><span class="n">WatchViewStub</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">watch_view_stub</span><span class="o">);</span>
-        <span class="n">stub</span><span class="o">.</span><span class="na">setOnLayoutInflatedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">WatchViewStub</span><span class="o">.</span><span class="na">OnLayoutInflatedListener</span><span class="o">()</span> <span class="o">{</span>
-            <span class="nd">@Override</span>
-            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onLayoutInflated</span><span class="o">(</span><span class="n">WatchViewStub</span> <span class="n">stub</span><span class="o">)</span> <span class="o">{</span>
-                <span class="n">mTextView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">stub</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text</span><span class="o">);</span>
-                <span class="n">mTextView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;You&#39;ll Never Walk Alone&quot;</span><span class="o">);</span>
-            <span class="o">}</span>
-        <span class="o">});</span>
+        <span class="n">mTextView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text</span><span class="o">);</span> 
     <span class="o">}</span>
 <span class="o">}</span></code></pre></div>
-<code>WatchViewStub</code> er en layout som automatisk velger riktig layoutfil basert på om klokka det kjøres på har firkantet eller rund skjerm.
 
-<h2>Android Manifest</h2>
+<h3>Android Manifest</h3>
 ndroid Manifest er appens kontrakt og inneholder blant annet alle activities appen består av og hvilke tilganger den skal ha. Eksempler på tilganger er: internett, posisjon eller kamera. I manifestet kan man også for hver activity spesifisere flere properties, som for eksempel en label, som kan bli brukt dersom man vil starte applikasjonen via tale.
 
 <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;manifest</span> <span class="err">...</span> <span class="nt">&gt;</span>
@@ -65,7 +83,7 @@ ndroid Manifest er appens kontrakt og inneholder blant annet alle activities app
 <span class="nt">&lt;/manifest &gt;</span></code></pre></div>
 
 
-<h2>Lister</h2>
+<h3>Lister</h3>
 
 
 

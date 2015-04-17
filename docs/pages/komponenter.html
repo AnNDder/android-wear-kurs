@@ -3,18 +3,50 @@ layout: default
 title: Komponenter
 ---
 
-<h2> Hvordan fungerer det? </h2>
-En Android Wear app kan lages både som en stand alone app og som en modul i et prosjekt bestående av flere moduler. Dersom den er sistnevnte vil installasjon av klokkemodulen skje automatisk når den håndholdte modulen installeres på for eksempel en telefon. Den er på den måten et tillegg til hovedfunksjonaliteten som tilbys gjennom den håndholdte modulen. Et unntak er under utvikling. Da vil man installere klokkemodulen direkte via USB eller Bluetooth. For hvordan dette gjøres, se (<a href="installasjonsveiledning.html">installasjonsveiledningen</a>). Dersom den er en stand alone app vil den installeres direkte når man laster den ned fra Google Play, uten å måtte installere en håndholdt modul først. Den vil dermed ikke dukke opp på den 
+En Android Wear app kan lages både som en stand alone app og som en modul i et prosjekt bestående av flere moduler. Dersom den er sistnevnte vil installasjon av klokkemodulen skje automatisk når den håndholdte modulen installeres på for eksempel en telefon. Den er på den måten et tillegg til hovedfunksjonaliteten som tilbys gjennom den håndholdte modulen. Et unntak er under utvikling. Da vil man installere klokkemodulen direkte via USB eller Bluetooth. For hvordan dette gjøres, se <a href="installasjonsveiledning.html">installasjonsveiledningen</a>. Dersom den er en stand alone app vil den installeres direkte når man laster den ned fra Google Play, uten å måtte installere en håndholdt modul først. Den vil dermed ikke dukke opp på den 
 håndholdte enheten som en applikasjon.
 
-// Få inn en enkel figur her
-<h2>Layout</h2>
-I Android Wear kan man velge å ha én eller flere layoutfiler. Det optimale er å ha én for firkantede skjermer og én for runde skjermer, for å sikre at all tilgjengelig skjermplass blir utnyttet. I Android generelt blir view skrevet i XML.
+<h3>Layout</h3>
+I Android blir views skrevet i XML.
 
-// Eksempel på begge layoutfiler
+{% highlight xml %}
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context=".MainActivity" tools:deviceIds="wear_round">
+    <TextView android:id="@+id/text" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" android:text="Hello World" />
+</RelativeLayout>
+{% endhighlight %}
+Når det gjelder Android Wear kan man velge å ha én eller flere layoutfiler. Det optimale er å ha én for firkantede skjermer og én for runde skjermer, for å sikre at all tilgjengelig skjermplass blir utnyttet. Det er så opp til operativsystemet å velge riktig fil basert på enheten det skal vises på. Dette gjøres ved hjelp av en såkalt <code>WatchViewStub</code>, som deklareres i XML og brukes i Java-koden.
+{% highlight xml %}
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.wearable.view.WatchViewStub
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" android:id="@+id/watch_view_stub"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    app:rectLayout="@layout/rect_activity_main" app:roundLayout="@layout/round_activity_main"
+    tools:context=".MainActivity"
+    tools:deviceIds="wear"></android.support.wearable.view.WatchViewStub>
+{% endhighlight %}
 
+{% highlight java %}
+...
+final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
+    stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
+      @Override
+      public void onLayoutInflated(WatchViewStub stub) {
+          mTextView = (TextView) stub.findViewById(R.id.text);
+      }
+    });
+...
+{% endhighlight %}
+I eksempelet vist ovenfor ser vi at det i XML-filen spesifiseres at vi har en layoutfil for firkantede og en for runde skjermer.
+I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra den av disse to som er i bruk.
 
-<h2>Activity</h2>
+<h3>Activity</h3>
 En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
 
 Nedenfor er et eksempel på <code>onCreate()</code>. Her vil alle komponenter man skal bruke i activitien settes opp, og man bruker <code>setContentView()</code> for å koble til et view.
@@ -27,21 +59,13 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
-        stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
-            @Override
-            public void onLayoutInflated(WatchViewStub stub) {
-                mTextView = (TextView) stub.findViewById(R.id.text);
-                mTextView.setText("You'll Never Walk Alone");
-            }
-        });
+        mTextView = (TextView) findViewById(R.id.text); 
     }
 }
 {% endhighlight %}
-<code>WatchViewStub</code> er en layout som automatisk velger riktig layoutfil basert på om klokka det kjøres på har firkantet eller rund skjerm.
 
-<h2>Android Manifest</h2>
-ndroid Manifest er appens kontrakt og inneholder blant annet alle activities appen består av og hvilke tilganger den skal ha. Eksempler på tilganger er: internett, posisjon eller kamera. I manifestet kan man også for hver activity spesifisere flere properties, som for eksempel en label, som kan bli brukt dersom man vil starte applikasjonen via tale.
+<h3>Android Manifest</h3>
+Android Manifest er appens kontrakt og inneholder blant annet alle activities appen består av og hvilke tilganger den skal ha. Eksempler på tilganger er: internett, posisjon eller kamera. I manifestet kan man også for hver activity spesifisere flere properties, som for eksempel en label, som kan bli brukt dersom man vil starte applikasjonen via tale.
 
 {% highlight xml %}
 <manifest ... >
@@ -54,6 +78,6 @@ ndroid Manifest er appens kontrakt og inneholder blant annet alle activities app
 {% endhighlight %}
 
 
-<h2>Lister</h2>
+<h3>Lister</h3>
 
 
