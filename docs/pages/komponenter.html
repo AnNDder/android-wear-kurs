@@ -2,12 +2,12 @@
 layout: default
 title: Komponenter
 ---
-
 En Android Wear app kan lages både som en stand alone app og som en modul i et prosjekt bestående av flere moduler. Dersom den er sistnevnte vil installasjon av klokkemodulen skje automatisk når den håndholdte modulen installeres på for eksempel en telefon. Den er på den måten et tillegg til hovedfunksjonaliteten som tilbys gjennom den håndholdte modulen. Et unntak er under utvikling. Da vil man installere klokkemodulen direkte via USB eller Bluetooth. For hvordan dette gjøres, se <a href="installasjonsveiledning.html">installasjonsveiledningen</a>. Dersom den er en stand alone app vil den installeres direkte når man laster den ned fra Google Play, uten å måtte installere en håndholdt modul først. Den vil dermed ikke dukke opp på den 
 håndholdte enheten som en applikasjon.
 
 <h3>Layout</h3>
-I Android blir views skrevet i XML.
+I Android blir views skrevet i XML og en layoutfil beskriver hvordan elementene skal posisjoneres for eksempel i forhold til hverandre. Mer informasjon
+om de grunnleggende layouttypene finnes i <a href="http://bekk.github.io/android101/pages/view-layout.html">Android 101 kurset</a>
 
 {% highlight xml %}
 <?xml version="1.0" encoding="utf-8"?>
@@ -44,12 +44,32 @@ final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
 ...
 {% endhighlight %}
 I eksempelet vist ovenfor ser vi at det i XML-filen spesifiseres at vi har en layoutfil for firkantede og en for runde skjermer.
-I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra den av disse to som er i bruk.
+I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra riktig layoutfil, ved hjelp av tekstfeltets id.
 
+<h4>TextView</h4>
+TextView er en mye brukt komponent som brukes til å vise text.
+{% highlight xml %}
+<TextView
+android:id="@+id/tvText"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Message" />
+{% endhighlight %}
+
+{% highlight java %}
+TextView tv = (TextView) parentView.findViewById(R.id.tvText);
+tv.setText("New text");
+{% endhighlight %}
+
+Et TextView har enkle metoder vi kan bruke for å hente ut og sette text. Dersom teksten som skal vises ikke er dynamisk, burde den forøvrig
+defineres i <code>res/values/strings.xml</code>, for å forenkle i18n.
+
+<h4>WearableListView</h4>
+WearableListView er en listeimplementasjon som kan brukes som et alternativ til det vanlige <code>ListView</code>. Sammenlignet med et vanlig ListView er det mer tilpasset mindre flater. Det benytter seg at det nye <code>RecyclerView</code> patternet som har blitt standard i Android-utvikling og har metoder for å detektere 
 <h3>Activity</h3>
 En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
 
-Nedenfor er et eksempel på <code>onCreate()</code>. Her vil alle komponenter man skal bruke i activitien settes opp, og man bruker <code>setContentView()</code> for å koble til et view.
+Nedenfor er et eksempel på <code>onCreate()</code>. Dette er den første metoden som trigges når activitien kjører. Her vil komponenter man skal bruke i settes opp. Man kaller også <code>setContentView()</code> for å koble til et view, altså en XML layoutfil. Oppsettet av en WatchViewStub som ble vist i forrige del, skjer typisk i <code>onCreate()</code>
 
 {% highlight java %}
 public class MainActivity extends Activity {
@@ -77,7 +97,5 @@ Android Manifest er appens kontrakt og inneholder blant annet alle activities ap
 </manifest >
 {% endhighlight %}
 
-
-<h3>Lister</h3>
 
 

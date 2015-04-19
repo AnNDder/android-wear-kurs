@@ -22,7 +22,8 @@
 håndholdte enheten som en applikasjon.
 
 <h3>Layout</h3>
-I Android blir views skrevet i XML.
+I Android blir views skrevet i XML og en layoutfil beskriver hvordan elementene skal posisjoneres for eksempel i forhold til hverandre. Mer informasjon
+om de grunnleggende layouttypene finnes i <a href="http://bekk.github.io/android101/pages/view-layout.html">Android 101 kurset</a>
 
 <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
 <span class="nt">&lt;RelativeLayout</span> <span class="na">xmlns:android=</span><span class="s">&quot;http://schemas.android.com/apk/res/android&quot;</span>
@@ -44,21 +45,36 @@ Når det gjelder Android Wear kan man velge å ha én eller flere layoutfiler. D
     <span class="na">tools:deviceIds=</span><span class="s">&quot;wear&quot;</span><span class="nt">&gt;&lt;/android.support.wearable.view.WatchViewStub&gt;</span></code></pre></div>
 
 <div class="highlight"><pre><code class="language-java" data-lang="java"><span class="o">...</span>
-        <span class="kd">final</span> <span class="n">WatchViewStub</span> <span class="n">stub</span> <span class="o">=</span> <span class="o">(</span><span class="n">WatchViewStub</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">watch_view_stub</span><span class="o">);</span>
-        <span class="n">stub</span><span class="o">.</span><span class="na">setOnLayoutInflatedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">WatchViewStub</span><span class="o">.</span><span class="na">OnLayoutInflatedListener</span><span class="o">()</span> <span class="o">{</span>
-            <span class="nd">@Override</span>
-            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onLayoutInflated</span><span class="o">(</span><span class="n">WatchViewStub</span> <span class="n">stub</span><span class="o">)</span> <span class="o">{</span>
-                <span class="n">mTextView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">stub</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text</span><span class="o">);</span>
-            <span class="o">}</span>
-        <span class="o">});</span>
+<span class="kd">final</span> <span class="n">WatchViewStub</span> <span class="n">stub</span> <span class="o">=</span> <span class="o">(</span><span class="n">WatchViewStub</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">watch_view_stub</span><span class="o">);</span>
+    <span class="n">stub</span><span class="o">.</span><span class="na">setOnLayoutInflatedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">WatchViewStub</span><span class="o">.</span><span class="na">OnLayoutInflatedListener</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onLayoutInflated</span><span class="o">(</span><span class="n">WatchViewStub</span> <span class="n">stub</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">mTextView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">stub</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">});</span>
 <span class="o">...</span></code></pre></div>
 I eksempelet vist ovenfor ser vi at det i XML-filen spesifiseres at vi har en layoutfil for firkantede og en for runde skjermer.
-I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra den av disse to som er i bruk.
+I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra riktig layoutfil, ved hjelp av tekstfeltets id.
 
+<h4>TextView</h4>
+TextView er en mye brukt komponent som brukes til å vise text.
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;TextView</span>
+<span class="na">android:id=</span><span class="s">&quot;@+id/tvText&quot;</span>
+<span class="na">android:layout_width=</span><span class="s">&quot;wrap_content&quot;</span>
+<span class="na">android:layout_height=</span><span class="s">&quot;wrap_content&quot;</span>
+<span class="na">android:text=</span><span class="s">&quot;Message&quot;</span> <span class="nt">/&gt;</span></code></pre></div>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">TextView</span> <span class="n">tv</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">parentView</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">tvText</span><span class="o">);</span>
+<span class="n">tv</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;New text&quot;</span><span class="o">);</span></code></pre></div>
+
+Et TextView har enkle metoder vi kan bruke for å hente ut og sette text. Dersom teksten som skal vises ikke er dynamisk, burde den forøvrig
+defineres i <code>res/values/strings.xml</code>, for å forenkle i18n.
+
+<h4>WearableListView</h4>
 <h3>Activity</h3>
 En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
 
-Nedenfor er et eksempel på <code>onCreate()</code>. Her vil alle komponenter man skal bruke i activitien settes opp, og man bruker <code>setContentView()</code> for å koble til et view.
+Nedenfor er et eksempel på <code>onCreate()</code>. Dette er den første metoden som trigges når activitien kjører. Her vil komponenter man skal bruke i settes opp. Man kaller også <code>setContentView()</code> for å koble til et view, altså en XML layoutfil. Oppsettet av en WatchViewStub som ble vist i forrige del, skjer typisk i <code>onCreate()</code>
 
 <div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
     <span class="kd">private</span> <span class="n">TextView</span> <span class="n">mTextView</span><span class="o">;</span>
@@ -72,7 +88,7 @@ Nedenfor er et eksempel på <code>onCreate()</code>. Her vil alle komponenter ma
 <span class="o">}</span></code></pre></div>
 
 <h3>Android Manifest</h3>
-ndroid Manifest er appens kontrakt og inneholder blant annet alle activities appen består av og hvilke tilganger den skal ha. Eksempler på tilganger er: internett, posisjon eller kamera. I manifestet kan man også for hver activity spesifisere flere properties, som for eksempel en label, som kan bli brukt dersom man vil starte applikasjonen via tale.
+Android Manifest er appens kontrakt og inneholder blant annet alle activities appen består av og hvilke tilganger den skal ha. Eksempler på tilganger er: internett, posisjon eller kamera. I manifestet kan man også for hver activity spesifisere flere properties, som for eksempel en label, som kan bli brukt dersom man vil starte applikasjonen via tale.
 
 <div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;manifest</span> <span class="err">...</span> <span class="nt">&gt;</span>
   <span class="nt">&lt;application</span> <span class="err">...</span> <span class="nt">&gt;</span>
@@ -82,8 +98,6 @@ ndroid Manifest er appens kontrakt og inneholder blant annet alle activities app
   ...
 <span class="nt">&lt;/manifest &gt;</span></code></pre></div>
 
-
-<h3>Lister</h3>
 
 
 
