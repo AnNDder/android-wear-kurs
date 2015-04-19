@@ -10,8 +10,8 @@
         android:layout_width="52dp"
         android:src="@drawable/ic_action_attach"
         app:circle_border_color="#FFFFFFFF"
-        app:circle_border_width="2dp"
-        app:circle_color="@color/white"/>
+        app:circle_border_width="1dp"
+        app:circle_radius="23dp"/>
 
     <TextView
         android:id="@+id/text"

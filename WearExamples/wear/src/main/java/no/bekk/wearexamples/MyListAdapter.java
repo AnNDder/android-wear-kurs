@@ -24,7 +24,7 @@ public class MyListAdapter extends WearableListView.Adapter {
 
     @Override
     public WearableListView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new WearableListView.ViewHolder(new ItemView(context));
+        return new MyViewHolder(new ItemView(context));
     }
 
     @Override
@@ -39,15 +39,19 @@ public class MyListAdapter extends WearableListView.Adapter {
         return items.size();
     }
 
+    public static class MyViewHolder extends WearableListView.ViewHolder {
+        public MyViewHolder(View itemView) {
+            super(itemView);
+        }
+    }
+
     private final class ItemView extends FrameLayout implements WearableListView.OnCenterProximityListener {
-        private Context context;
         public TextView itemContentView;
         public CircledImageView imageView;
 
         public ItemView(Context context) {
             super(context);
-            this.context = context;
-            LayoutInflater.from(context).inflate(R.layout.todo_item_layout, this, true);
+            View.inflate(context, R.layout.todo_item_layout, this);
             this.itemContentView = (TextView) findViewById(R.id.text);
             this.imageView = (CircledImageView) findViewById(R.id.image);
         }
