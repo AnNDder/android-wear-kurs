@@ -7,7 +7,7 @@ håndholdte enheten som en applikasjon.
 
 <h3>Layout</h3>
 I Android blir views skrevet i XML og en layoutfil beskriver hvordan elementene skal posisjoneres for eksempel i forhold til hverandre. Mer informasjon
-om de grunnleggende layouttypene finnes i <a href="http://bekk.github.io/android101/pages/view-layout.html">Android 101 kurset</a>
+om de grunnleggende layouttypene finnes i <a href="http://bekk.github.io/android101/pages/view-layout.html">Android 101 kurset.</a>
 
 {% highlight xml %}
 <?xml version="1.0" encoding="utf-8"?>
@@ -65,7 +65,49 @@ Et TextView har enkle metoder vi kan bruke for å hente ut og sette text. Dersom
 defineres i <code>res/values/strings.xml</code>, for å forenkle i18n.
 
 <h4>WearableListView</h4>
-WearableListView er en listeimplementasjon som kan brukes som et alternativ til det vanlige <code>ListView</code>. Sammenlignet med et vanlig ListView er det mer tilpasset mindre flater. Det benytter seg at det nye <code>RecyclerView</code> patternet som har blitt standard i Android-utvikling og har metoder for å detektere 
+WearableListView er en listeimplementasjon som kan brukes som et alternativ til det vanlige <code>ListView</code>. Sammenlignet med et vanlig ListView er den mer tilpasset mindre flater. Det benytter seg også av den nye <a href="http://bekk.github.io/android101/pages/list-recycler-view.html">RecyclerView</a> komponenten som har blitt standard i Android-utvikling. RecyclerViews har en adapter som har ansvaret for å rendre hvert listeelement. Dette er da layoutfiler som representerer visning av hver enkelt rad. De har også en ViewHolder. Denne blir brukt til å cache view-elementer slik at det ressurskrevende kallet <code>findViewById()</code> ikke blir gjort hver gang man scroller i lista. Tidligere måtte man lage manuelle ViewHoldere, men fra og med Android L har Google lagt dette inn som en permanent feature.
+
+{% highlight java %}
+public class MyListAdapter extends WearableListView.Adapter {
+    private final List<Item> items;
+    private final Context context;
+
+    public MyListAdapter(List<Item> items, Context context) {
+        this.items = items;
+        this.context = context;
+    }
+
+    @Override
+    public WearableListView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.todo_item_layout, parent, false);
+        return new MyViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(WearableListView.ViewHolder holder, int position) {
+        MyViewHolder myViewHolder = (MyViewHolder) holder;
+        Item item = items.get(position);
+        myViewHolder.textView.setText(item.getContent());
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
+
+    public static class MyViewHolder extends WearableListView.ViewHolder {
+        public TextView textView;
+
+        public MyViewHolder(View itemView) {
+            super(itemView);
+            textView = (TextView) itemView.findViewById(R.id.text);
+        }
+    }
+}
+{% endhighlight %}
+Koden viser en adapter som rendrer layoutfilen <code>todo_item_layout</code> og en ViewHolder som cacher et TextView. I metoden <code>onBindViewHolder()</code> får TextViewene i hver rad satt verdi fra Item-listen som har blitt sendt inn.
+
+// OnCenterProximityListener for å gjøre det litt mer interaktivt
 <h3>Activity</h3>
 En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
 
