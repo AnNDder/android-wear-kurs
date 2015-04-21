@@ -105,9 +105,31 @@ public class MyListAdapter extends WearableListView.Adapter {
     }
 }
 {% endhighlight %}
-Koden viser en adapter som rendrer layoutfilen <code>todo_item_layout</code> og en ViewHolder som cacher et TextView. I metoden <code>onBindViewHolder()</code> får TextViewene i hver rad satt verdi fra Item-listen som har blitt sendt inn.
+Koden viser en adapter som rendrer layoutfilen <code>todo_item_layout</code> og en ViewHolder som cacher et TextView. I metoden <code>onBindViewHolder()</code> får TextViewene i hver rad satt verdi fra Item-listen som har blitt sendt inn. For å gjøre listelementene mer interaktive kan man bruke en<code>OnCenterProximityListener</code>. Denne komponenten vil detektere når hver enkelt rad befinner seg i midten, slik at man kan velge å utheve innholdet i denne raden. Lytteren settes direkte på layouten for hver rad.
 
-// OnCenterProximityListener for å gjøre det litt mer interaktivt
+{% highlight java %}
+private final class ItemView extends FrameLayout implements WearableListView.OnCenterProximityListener {
+        public TextView itemContentView;
+
+        public ItemView(Context context) {
+            super(context);
+            View.inflate(context, R.layout.todo_item_layout, this);
+            this.itemContentView = (TextView) findViewById(R.id.text);
+        }
+
+        @Override
+        public void onCenterPosition(boolean b) {
+            itemContentView.animate().scaleX(1f).scaleY(1f).alpha(1);
+        }
+
+        @Override
+        public void onNonCenterPosition(boolean b) {
+            itemContentView.animate().scaleX(0.8f).scaleY(0.8f).alpha(0.6f);
+        }
+    }
+
+{% endhighlight %}
+
 <h3>Activity</h3>
 En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
 
