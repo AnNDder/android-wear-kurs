@@ -46,6 +46,35 @@ final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
 I eksempelet vist ovenfor ser vi at det i XML-filen spesifiseres at vi har en layoutfil for firkantede og en for runde skjermer.
 I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra riktig layoutfil, ved hjelp av tekstfeltets id.
 
+For å håndtere visning på firkantede og runde skjermer brukes noe som kalles <code>BoxInsetLayout</code>
+{% highlight xml %}
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.wearable.view.BoxInsetLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:background="#434343"
+    app:layout_box="left|top|right">
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/header"
+        android:text="Min TODO-liste"
+        android:fontFamily="sans-serif-light"
+        android:layout_gravity="center_horizontal"
+        android:textSize="20sp"/>
+    </RelativeLayout>
+</android.support.wearable.view.BoxInsetLayout>
+{% endhighlight %}
+Denne layouten er placeholder som gjør gjenbruk av kode på tvers av firkantede og runde skjermer enklere.
+Den vil bli oversett av operativsystemet på firkantede skjermer, men på runde vil den benytte seg av propertien <code>layout_box</code> for å posisjonere 
+elementene i layouten inni en firkant. Her kan man spesifisere hvilke hjørner elementene skal ta hensyn til, slik at innholdet ikke rendres utenfor 
+
 <h4>TextView</h4>
 TextView er en mye brukt komponent som brukes til å vise text.
 {% highlight xml %}
