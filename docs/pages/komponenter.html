@@ -45,8 +45,8 @@ final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
 {% endhighlight %}
 I eksempelet vist ovenfor ser vi at det i XML-filen spesifiseres at vi har en layoutfil for firkantede og en for runde skjermer.
 I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra riktig layoutfil, ved hjelp av tekstfeltets id.
-
-For å håndtere visning på firkantede og runde skjermer brukes noe som kalles <code>BoxInsetLayout</code>
+<br/>
+Dersom man likevel vil ha kun én layoutfil, kan man bruke noe som kalles <code>BoxInsetLayout</code>
 {% highlight xml %}
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.wearable.view.BoxInsetLayout
