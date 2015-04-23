@@ -25,14 +25,7 @@ public class MyListAdapter extends WearableListView.Adapter {
 
     @Override
     public WearableListView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final ItemView itemView = new ItemView(context);
-        itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(context, "Clicked " , Toast.LENGTH_SHORT).show();
-            }
-        });
-        return new MyViewHolder(itemView);
+        return new MyViewHolder(new ItemView(context));
     }
 
     @Override
