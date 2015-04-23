@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="nb">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Komponenter</title>
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="/android-wear-kurs/css/syntax.css">
+        <link href="/android-wear-kurs/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link rel="stylesheet" href="/android-wear-kurs/css/main.css">
+        <script src="/android-wear-kurs/js/jquery.min.js"></script>
+        <script src="/android-wear-kurs/js/bootstrap.min.js"></script>
+
+    </head>
+    <body>
+      <div class="container-fluid main">
+        <div class="row-fluid">
+          <div class="span8">
+            <h1 class="page-header">Komponenter</h1>
+            En Android Wear app kan lages både som en stand alone app og som en modul i et prosjekt bestående av flere moduler. Dersom den er sistnevnte vil installasjon av klokkemodulen skje automatisk når den håndholdte modulen installeres på for eksempel en telefon. Den er på den måten et tillegg til hovedfunksjonaliteten som tilbys gjennom den håndholdte modulen. Et unntak er under utvikling. Da vil man installere klokkemodulen direkte via USB eller Bluetooth. For hvordan dette gjøres, se <a href="installasjonsveiledning.html">installasjonsveiledningen</a>. Dersom den er en stand alone app vil den installeres direkte når man laster den ned fra Google Play, uten å måtte installere en håndholdt modul først. Den vil dermed ikke dukke opp på den 
+håndholdte enheten som en applikasjon.
+
+<h3>Layout</h3>
+I Android blir views skrevet i XML og en layoutfil beskriver hvordan elementene skal posisjoneres for eksempel i forhold til hverandre. Mer informasjon
+om de grunnleggende layouttypene finnes i <a href="http://bekk.github.io/android101/pages/view-layout.html">Android 101 kurset</a>
+
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;RelativeLayout</span> <span class="na">xmlns:android=</span><span class="s">&quot;http://schemas.android.com/apk/res/android&quot;</span>
+    <span class="na">xmlns:tools=</span><span class="s">&quot;http://schemas.android.com/tools&quot;</span> <span class="na">android:layout_width=</span><span class="s">&quot;match_parent&quot;</span>
+    <span class="na">android:layout_height=</span><span class="s">&quot;match_parent&quot;</span> <span class="na">tools:context=</span><span class="s">&quot;.MainActivity&quot;</span> <span class="na">tools:deviceIds=</span><span class="s">&quot;wear_round&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;TextView</span> <span class="na">android:id=</span><span class="s">&quot;@+id/text&quot;</span> <span class="na">android:layout_width=</span><span class="s">&quot;wrap_content&quot;</span>
+        <span class="na">android:layout_height=</span><span class="s">&quot;wrap_content&quot;</span> <span class="na">android:layout_centerHorizontal=</span><span class="s">&quot;true&quot;</span>
+        <span class="na">android:layout_centerVertical=</span><span class="s">&quot;true&quot;</span> <span class="na">android:text=</span><span class="s">&quot;Hello World&quot;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/RelativeLayout&gt;</span></code></pre></div>
+Når det gjelder Android Wear kan man velge å ha én eller flere layoutfiler. Det optimale er å ha én for firkantede skjermer og én for runde skjermer, for å sikre at all tilgjengelig skjermplass blir utnyttet. Det er så opp til operativsystemet å velge riktig fil basert på enheten det skal vises på. Dette gjøres ved hjelp av en såkalt <code>WatchViewStub</code>, som deklareres i XML og brukes i Java-koden.
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;android.support.wearable.view.WatchViewStub</span>
+    <span class="na">xmlns:android=</span><span class="s">&quot;http://schemas.android.com/apk/res/android&quot;</span>
+    <span class="na">xmlns:app=</span><span class="s">&quot;http://schemas.android.com/apk/res-auto&quot;</span>
+    <span class="na">xmlns:tools=</span><span class="s">&quot;http://schemas.android.com/tools&quot;</span> <span class="na">android:id=</span><span class="s">&quot;@+id/watch_view_stub&quot;</span>
+    <span class="na">android:layout_width=</span><span class="s">&quot;match_parent&quot;</span> <span class="na">android:layout_height=</span><span class="s">&quot;match_parent&quot;</span>
+    <span class="na">app:rectLayout=</span><span class="s">&quot;@layout/rect_activity_main&quot;</span> <span class="na">app:roundLayout=</span><span class="s">&quot;@layout/round_activity_main&quot;</span>
+    <span class="na">tools:context=</span><span class="s">&quot;.MainActivity&quot;</span>
+    <span class="na">tools:deviceIds=</span><span class="s">&quot;wear&quot;</span><span class="nt">&gt;&lt;/android.support.wearable.view.WatchViewStub&gt;</span></code></pre></div>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="o">...</span>
+<span class="kd">final</span> <span class="n">WatchViewStub</span> <span class="n">stub</span> <span class="o">=</span> <span class="o">(</span><span class="n">WatchViewStub</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">watch_view_stub</span><span class="o">);</span>
+    <span class="n">stub</span><span class="o">.</span><span class="na">setOnLayoutInflatedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">WatchViewStub</span><span class="o">.</span><span class="na">OnLayoutInflatedListener</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onLayoutInflated</span><span class="o">(</span><span class="n">WatchViewStub</span> <span class="n">stub</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">mTextView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">stub</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">});</span>
+<span class="o">...</span></code></pre></div>
+I eksempelet vist ovenfor ser vi at det i XML-filen spesifiseres at vi har en layoutfil for firkantede og en for runde skjermer.
+I Java-filen brukes så WatchViewStub-objektet til å hente ut et tekstfelt fra riktig layoutfil, ved hjelp av tekstfeltets id.
+
+<h4>TextView</h4>
+TextView er en mye brukt komponent som brukes til å vise text.
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;TextView</span>
+<span class="na">android:id=</span><span class="s">&quot;@+id/tvText&quot;</span>
+<span class="na">android:layout_width=</span><span class="s">&quot;wrap_content&quot;</span>
+<span class="na">android:layout_height=</span><span class="s">&quot;wrap_content&quot;</span>
+<span class="na">android:text=</span><span class="s">&quot;Message&quot;</span> <span class="nt">/&gt;</span></code></pre></div>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">TextView</span> <span class="n">tv</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">parentView</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">tvText</span><span class="o">);</span>
+<span class="n">tv</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;New text&quot;</span><span class="o">);</span></code></pre></div>
+
+Et TextView har enkle metoder vi kan bruke for å hente ut og sette text. Dersom teksten som skal vises ikke er dynamisk, burde den forøvrig
+defineres i <code>res/values/strings.xml</code>, for å forenkle i18n.
+
+<h4>WearableListView</h4>
+WearableListView er en listeimplementasjon som kan brukes som et alternativ til det vanlige <code>ListView</code>. Sammenlignet med et vanlig ListView er den mer tilpasset mindre flater. Det benytter seg også av det nye <a href="http://bekk.github.io/android101/pages/list-recycler-view.html">RecyclerView</a> patternet som har blitt standard i Android-utvikling. RecyclerViews har en adapter som har ansvaret for å rendre hvert listeelement. Dette er da layoutfiler som representerer visning av hver enkelt rad. De har også en ViewHolder. Denne blir brukt til å cache view-elementer slik at det ressurskrevende kallet <code>findViewById()</code> ikke blir gjort hver gang man scroller i lista. Tidligere måtte man lage manuelle ViewHoldere, men fra og med Android L har Google lagt dette inn som en permanent feature.
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyListAdapter</span> <span class="kd">extends</span> <span class="n">WearableListView</span><span class="o">.</span><span class="na">Adapter</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="n">items</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Context</span> <span class="n">context</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">MyListAdapter</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="n">items</span><span class="o">,</span> <span class="n">Context</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">items</span> <span class="o">=</span> <span class="n">items</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">context</span> <span class="o">=</span> <span class="n">context</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">WearableListView</span><span class="o">.</span><span class="na">ViewHolder</span> <span class="nf">onCreateViewHolder</span><span class="o">(</span><span class="n">ViewGroup</span> <span class="n">parent</span><span class="o">,</span> <span class="kt">int</span> <span class="n">viewType</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">View</span> <span class="n">view</span> <span class="o">=</span> <span class="n">LayoutInflater</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">context</span><span class="o">).</span><span class="na">inflate</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">todo_item_layout</span><span class="o">,</span> <span class="n">parent</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">MyViewHolder</span><span class="o">(</span><span class="n">view</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onBindViewHolder</span><span class="o">(</span><span class="n">WearableListView</span><span class="o">.</span><span class="na">ViewHolder</span> <span class="n">holder</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">MyViewHolder</span> <span class="n">myViewHolder</span> <span class="o">=</span> <span class="o">(</span><span class="n">MyViewHolder</span><span class="o">)</span> <span class="n">holder</span><span class="o">;</span>
+        <span class="n">Item</span> <span class="n">item</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">position</span><span class="o">);</span>
+        <span class="n">myViewHolder</span><span class="o">.</span><span class="na">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">item</span><span class="o">.</span><span class="na">getContent</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getItemCount</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">items</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">MyViewHolder</span> <span class="kd">extends</span> <span class="n">WearableListView</span><span class="o">.</span><span class="na">ViewHolder</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="n">TextView</span> <span class="n">textView</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="nf">MyViewHolder</span><span class="o">(</span><span class="n">View</span> <span class="n">itemView</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">super</span><span class="o">(</span><span class="n">itemView</span><span class="o">);</span>
+            <span class="n">textView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">itemView</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></div>
+Koden viser en adapter som rendrer layoutfilen <code>todo_item_layout</code> og en ViewHolder som cacher et TextView. I metoden <code>onBindViewHolder()</code> får rad satt verdi fra Item-listen.
+
+// OnCenterProximityListener for å gjøre det litt mer interaktivt
+<h3>Activity</h3>
+En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
+
+Nedenfor er et eksempel på <code>onCreate()</code>. Dette er den første metoden som trigges når activitien kjører. Her vil komponenter man skal bruke i settes opp. Man kaller også <code>setContentView()</code> for å koble til et view, altså en XML layoutfil. Oppsettet av en WatchViewStub som ble vist i forrige del, skjer typisk i <code>onCreate()</code>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">TextView</span> <span class="n">mTextView</span><span class="o">;</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
+        <span class="n">mTextView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">text</span><span class="o">);</span> 
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></div>
+
+<h3>Android Manifest</h3>
+Android Manifest er appens kontrakt og inneholder blant annet alle activities appen består av og hvilke tilganger den skal ha. Eksempler på tilganger er: internett, posisjon eller kamera. I manifestet kan man også for hver activity spesifisere flere properties, som for eksempel en label, som kan bli brukt dersom man vil starte applikasjonen via tale.
+
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;manifest</span> <span class="err">...</span> <span class="nt">&gt;</span>
+  <span class="nt">&lt;application</span> <span class="err">...</span> <span class="nt">&gt;</span>
+      <span class="nt">&lt;activity</span> <span class="na">android:name=</span><span class="s">&quot;.MainActivity&quot;</span> <span class="na">android:label=</span><span class="s">&quot;MainActivity&quot;</span><span class="nt">/&gt;</span>
+      ...
+  <span class="err">&lt;</span>/application ... &gt;
+  ...
+<span class="nt">&lt;/manifest &gt;</span></code></pre></div>
+
+
+
+
+
+          </div>
+          <nav class="span4">
+            <strong>Teori</strong>
+            
+<ul class="nav nav-pills nav-stacked">
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class="active"><a href="/android-wear-kurs/pages/komponenter.html">Komponenter</a></li>
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="/android-wear-kurs/pages/kommunikasjon.html">Kommunikasjon</a></li>
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+      <li class=""><a href="/android-wear-kurs/pages/eksempler.html">Eksempler</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+
+  
+</ul>
+            
+            <strong>Oppgaver</strong>
+            
+<ul class="nav nav-pills nav-stacked">
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="/android-wear-kurs/pages/installasjonsveiledning.html">Installasjonsveiledning</a></li>
+    
+  
+    
+  
+    
+  
+    
+  
+
+
+  
+
+  
+    
+  
+
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+      <li class=""><a href="/android-wear-kurs/pages/oppgaver.html">Oppgaver</a></li>
+    
+  
+
+  
+</ul>
+          </nav>
+        </div>
+      </div>
+
+    </body>
+</html>
