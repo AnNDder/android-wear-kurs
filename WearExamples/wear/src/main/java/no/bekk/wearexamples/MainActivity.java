@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.wearable.view.WatchViewStub;
 import android.support.wearable.view.WearableListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,11 +42,11 @@ public class MainActivity extends Activity implements WearableListView.ClickList
 
     @Override
     public void onClick(WearableListView.ViewHolder viewHolder) {
-
+        Toast.makeText(this, "clicked row", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onTopEmptyRegionClick() {
-
+        Toast.makeText(this, "clicked top region", Toast.LENGTH_SHORT).show();
     }
 }
