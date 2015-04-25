@@ -27,4 +27,5 @@ proguard/
 *.log
 
 docs/.DS_Store
+docs/_site/
 *.DS_Store
