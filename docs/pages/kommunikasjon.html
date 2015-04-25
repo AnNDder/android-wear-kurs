@@ -28,8 +28,8 @@ GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
 <p><code>Messages-APIet</code>brukes til enveiskommunikasjon fra en enhet til en annen. Det kan f.eks. brukes til å åpne en spesifikk <code>activity</code> på en annen enhet,
 og et annet eksempel kan være at en knapp på klokka sender en <code>Message</code> til telefonen som gjør at musikkavspilleren skifter til neste sang.</p>
 
-<p>En <code>Message</code> inneholder alltid en unik path som identifiserer meldingen. I tillegg kan man legge ved noe data i form av et <code>byte</code>-array.
-Dataen bør ikke overstige 100k.</p>
+<p>En <code>Message</code> inneholder alltid en unik path som begynner med <code>/</code> som identifiserer meldingen. I tillegg kan man legge ved noe data i form av et <code>byte</code>-array.
+Dataen bør ikke overstige 100KB.</p>
 
 <h4>Send melding</h4>
 
@@ -56,8 +56,8 @@ Wearable.MessageApi.sendMessage(mGoogleApiClient, nodeId, UNIQUE_PATH, new byte[
 
 <h4>Motta melding</h4>
 
-<p>Implementer <code>MessageListener</code>-interfacet og registrer klassen med metoden <code>Wearable.MessageApi.addListener()</code>. Du vil typisk sjekke hva pathen til messagen er,
-og handle på den:</p>
+<p>Implementer <code>MessageListener</code>-interfacet og registrer klassen med metoden <code>Wearable.MessageApi.addListener(…)</code>.
+Du vil typisk sjekke hva pathen til messagen er, og handle deretter:</p>
 
 {% highlight java %}
 @Override
@@ -67,3 +67,11 @@ public void onMessageReceived(MessageEvent messageEvent) {
     }
 }
 {% endhighlight %}
+
+<h3>DataItems</h3>
+
+<p>For å synkronisere data mellom enheter, bruker man <code>DataItems</code>. Et <code>DataItem</code> inneholder – i likhet med en <code>Message</code> – en unik path som begynner med <code>/</code> i tillegg
+til et <code>byte</code>-array med data (maks 100KB).</p>
+
+<p>I stedet for å implementere <code>DataItem</code> direkte, vil man typisk bruke <code>DataMap</code>-klassen som lar oss manipulere data i key-value-par.
+<code>DataMap</code> vil også håndtere serialisering og deserialisering automatisk.</p>
