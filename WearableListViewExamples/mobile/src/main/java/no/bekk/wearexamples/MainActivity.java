@@ -8,6 +8,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.Wearable;
+
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -19,6 +22,7 @@ public class MainActivity extends ActionBarActivity {
     private RecyclerView todoItemList;
     private EditText itemInput;
     private Button addButton;
+    private GoogleApiClient googleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +45,22 @@ public class MainActivity extends ActionBarActivity {
                 todoItemList.getAdapter().notifyDataSetChanged();
             }
         });
+
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .build();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        googleApiClient.disconnect();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        googleApiClient.connect();
     }
 
     private void populateTodoItems() {
@@ -62,5 +82,4 @@ public class MainActivity extends ActionBarActivity {
         todoItems.add(thirdItem);
         todoItems.add(fourthItem);
     }
-
 }
