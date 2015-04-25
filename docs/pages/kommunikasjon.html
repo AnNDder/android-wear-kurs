@@ -3,11 +3,11 @@ layout: default
 title: Kommunikasjon
 ---
 
-For å kommunisere mellom mobilen og klokka bruker man <code>Wearable Data Layer APIet</code> som er en del av Google Play services. Dette APIet kan brukes til å synkronisere
-data og sende meldinger mellom enhetene. Vi skal se nærmere på hvordan man sender <code>DataItems</code>, <code>Messages</code> og <code>Assets</code>.
+<p>For å kommunisere mellom mobilen og klokka bruker man <code>Wearable Data Layer APIet</code> som er en del av Google Play services. Dette APIet kan brukes til å synkronisere
+data og sende meldinger mellom enhetene. Vi skal se nærmere på hvordan man sender <code>DataItems</code>, <code>Messages</code> og <code>Assets</code>.</p>
 
-Det første man trenger er en <code>GoogleApiClient</code>, Google Play services' klient. I sin enkleste form bygges den på følgende måte
-(se <a href="https://developer.android.com/google/auth/api-client.html">dokumentasjonen</a> for ytterligere forklaring på hvordan man bruker klienten):
+<p>Det første man trenger er en <code>GoogleApiClient</code>, Google Play services' klient. I sin enkleste form bygges den på følgende måte
+(se <a href="https://developer.android.com/google/auth/api-client.html">dokumentasjonen</a> for ytterligere forklaring på hvordan man bruker klienten):</p>
 
 {% highlight java %}
 GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -21,23 +21,29 @@ GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
         .build();
 {% endhighlight %}
 
-Når du kaller på <code>mGoogleApiClient.connect()</code> blir <code>onConnected</code> invokert, og klienten er klar til bruk.
+<p>Når du kaller på <code>mGoogleApiClient.connect()</code> blir <code>onConnected</code> invokert, og klienten er klar til bruk.</p>
 
 <h3>Messages</h3>
 
-En <code>Message</code> inneholder alltid en unik path som identifiserer meldingen. I tillegg kan man legge ved noe data i form av et <code>byte</code>-array,
-som ikke bør overstige 100k.<br>Først må man finne ut hvilke noder som er tilkoblet enheten, ved å kalle på <code>getConnectedNodes</code>:
+<p><code>Messages-APIet</code>brukes til enveiskommunikasjon fra en enhet til en annen. Det kan f.eks. brukes til å åpne en spesifikk <code>activity</code> på en annen enhet,
+og et annet eksempel kan være at en knapp på klokka sender en <code>Message</code> til telefonen som gjør at musikkavspilleren skifter til neste sang.</p>
+
+<p>En <code>Message</code> inneholder alltid en unik path som identifiserer meldingen. I tillegg kan man legge ved noe data i form av et <code>byte</code>-array.
+Dataen bør ikke overstige 100k.</p>
+
+<p>Først må man finne ut hvilke noder som er tilkoblet enheten, ved å kalle på <code>getConnectedNodes</code>:</p>
 
 {% highlight java %}
 PendingResult<NodeApi.GetConnectedNodesResult> nodes = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient);
 {% endhighlight %}
 
-Dette kallet returnerer et <code>PendingResult</code>. Resultatet kan hentes ved å kalle den synkrone <code>await()</code>, som blokkerer til den får svar, eller ved å sende et objekt
-som implementerer interfacet <code>ResultCallback</code> til <code>setResultCallback(ResultCallback)</code> som utføres asynkront. <em>Legg forøvrig merke til at blokkerende kall
-aldri skal kjøres på UI-tråden, les mer om bakgrunnstråder i <a href="https://bekk.github.io/android101/pages/working-in-the-background.html">Android 101-kurset</a>.</em><br>
-Resultatet vil inneholde en liste med <code>Node</code>s som du kan bruke videre.
+<p>Dette kallet returnerer et <code>PendingResult</code>. Resultatet kan hentes ved å kalle <code>await()</code>, som blokkerer til den får svar, eller ved å sende et objekt
+som implementerer interfacet <code>ResultCallback</code> til <code>setResultCallback(ResultCallback)</code>, som utføres asynkront. <em>Legg forøvrig merke til at blokkerende kall
+aldri skal kjøres på UI-tråden. Les mer om bakgrunnstråder i <a href="https://bekk.github.io/android101/pages/working-in-the-background.html">Android 101-kurset</a>.</em></p>
 
-<h4>Send meldingen</h4>
+<p>Resultatet vil inneholde en liste med <code>Node</code>s som du kan bruke videre.</p>
+
+<h4>Send melding</h4>
 
 {% highlight java %}
 Wearable.MessageApi.sendMessage(mGoogleApiClient, nodeId, UNIQUE_PATH, new byte[0])
@@ -48,10 +54,10 @@ Wearable.MessageApi.sendMessage(mGoogleApiClient, nodeId, UNIQUE_PATH, new byte[
         );
 {% endhighlight %}
 
-<h4>Lytt etter meldinger</h4>
+<h4>Motta melding</h4>
 
-Implementer <code>MessageListener</code>-interfacet og registrer klassen med metoden <code>Wearable.MessageApi.addListener()</code>. Du vil typisk sjekke hva pathen til messagen er, og handle
-basert på den:
+<p>Implementer <code>MessageListener</code>-interfacet og registrer klassen med metoden <code>Wearable.MessageApi.addListener()</code>. Du vil typisk sjekke hva pathen til messagen er,
+og handle på den:</p>
 
 {% highlight java %}
 @Override
