@@ -1,7 +1,12 @@
 package no.bekk.wearexamples;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.view.WatchViewStub;
 import android.support.wearable.view.WearableListView;
 import android.widget.TextView;
@@ -38,6 +43,9 @@ public class MainActivity extends Activity implements WearableListView.ClickList
                 listView.setClickListener(MainActivity.this);
             }
         });
+
+        IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new MessageReceiver(), messageFilter);
     }
 
     @Override
@@ -48,5 +56,13 @@ public class MainActivity extends Activity implements WearableListView.ClickList
     @Override
     public void onTopEmptyRegionClick() {
         Toast.makeText(this, "clicked top region", Toast.LENGTH_SHORT).show();
+    }
+
+    public class MessageReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(context, intent.getExtras().getString("message"), Toast.LENGTH_SHORT).show();
+        }
     }
 }
