@@ -21,6 +21,8 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.util.ArrayList;
 
+import no.bekk.wearexamples.domain.Item;
+
 public class WearableListenerService extends
         com.google.android.gms.wearable.WearableListenerService {
     private GoogleApiClient googleApiClient;
@@ -59,7 +61,7 @@ public class WearableListenerService extends
             clearDataItemCache(dataEvent);
             if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
                 DataItem item = dataEvent.getDataItem();
-                if (item.getUri().getPath().equals("/getItems")) {
+                if (item.getUri().getPath().equals("/getItems") || item.getUri().getPath().equals("/itemsHaveChanged")) {
                     SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
                     String itemsJson = StaticHelpers.read(prefs);
                     Item[] items = StaticHelpers.getGson().fromJson(itemsJson, Item[].class);

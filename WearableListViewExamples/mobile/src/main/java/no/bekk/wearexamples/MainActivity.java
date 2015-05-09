@@ -17,6 +17,11 @@ import android.widget.EditText;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 
@@ -27,10 +32,14 @@ import org.joda.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import no.bekk.wearexamples.adapter.TodoListAdapter;
+import no.bekk.wearexamples.domain.Item;
+import no.bekk.wearexamples.listeners.ItemDoneListener;
+
 import static java.util.Arrays.asList;
 
 
-public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks,
+public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, ItemDoneListener,
         GoogleApiClient.OnConnectionFailedListener {
     private List<Item> todoItems = new ArrayList<Item>();
     private RecyclerView todoItemList;
@@ -45,7 +54,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         itemInput = (EditText) findViewById(R.id.item_input);
         addButton = (Button) findViewById(R.id.add_btn);
         todoItemList = (RecyclerView) findViewById(R.id.items_view);
-        todoItemList.setAdapter(new TodoListAdapter(this, todoItems));
+        todoItemList.setAdapter(new TodoListAdapter(this, todoItems, this));
         todoItemList.setLayoutManager(new LinearLayoutManager(this));
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
@@ -125,6 +134,29 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         todoItems.add(secondItem);
         todoItems.add(thirdItem);
         todoItems.add(fourthItem);
+    }
+
+    private void syncItems(final String path) {
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create(path);
+        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+        PendingResult<DataApi.DataItemResult> pendingResult =
+                Wearable.DataApi.putDataItem(googleApiClient, putDataReq);
+        pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override
+            public void onResult(DataApi.DataItemResult dataItemResult) {
+                if (dataItemResult.getStatus().isSuccess()) {
+                    Log.i("itemChangedMessage", "itemChangedMessage successfully sent from handheld activity");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void itemHasChanged(Item item, int index) {
+        todoItems.get(index).setDone(item.isDone());
+        SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
+        StaticHelpers.write(prefs, todoItems);
+        syncItems("/itemsHaveChanged");
     }
 
     private void storeNewItem(Item item) {

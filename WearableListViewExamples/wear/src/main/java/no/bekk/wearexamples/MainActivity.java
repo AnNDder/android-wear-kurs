@@ -29,6 +29,9 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import no.bekk.wearexamples.adapter.MyListAdapter;
+import no.bekk.wearexamples.domain.Item;
+
 public class MainActivity extends Activity implements WearableListView.ClickListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, DataApi.DataListener {
     private WearableListView listView;

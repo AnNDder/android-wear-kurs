@@ -7,6 +7,8 @@ import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
+import no.bekk.wearexamples.domain.Item;
+
 public class StaticHelpers {
     public static Gson getGson() {
         return new GsonBuilder().create();

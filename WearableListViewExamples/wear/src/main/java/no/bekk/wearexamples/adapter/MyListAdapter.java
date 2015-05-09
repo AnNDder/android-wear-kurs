@@ -1,4 +1,4 @@
-package no.bekk.wearexamples;
+package no.bekk.wearexamples.adapter;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
@@ -9,9 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
+
+import no.bekk.wearexamples.R;
+import no.bekk.wearexamples.domain.Item;
 
 public class MyListAdapter extends WearableListView.Adapter {
 
@@ -33,6 +35,12 @@ public class MyListAdapter extends WearableListView.Adapter {
         Item item = items.get(position);
         ItemView view = (ItemView) holder.itemView;
         view.itemContentView.setText(item.getContent());
+        if (item.isDone()) {
+            view.imageView.setImageResource(R.drawable.ic_action_done);
+        }
+        else {
+            view.imageView.setImageResource(R.drawable.ic_action_attach);
+        }
     }
 
     @Override
@@ -46,14 +54,14 @@ public class MyListAdapter extends WearableListView.Adapter {
         }
     }
 
-    private final class ItemView extends FrameLayout implements WearableListView.OnCenterProximityListener {
+    protected class ItemView extends FrameLayout implements WearableListView.OnCenterProximityListener {
         private static final int ANIMATION_DURATION_MS = 150;
         private static final float SHRINK_CIRCLE_RATIO = .80f;
         private static final float SHRINK_LABEL_ALPHA = .5f;
         private static final float EXPAND_LABEL_ALPHA = 1f;
 
         public final TextView itemContentView;
-        public final CircledImageView imageView;
+        public CircledImageView imageView;
         private final ObjectAnimator expandCircleAnimator;
         private final ObjectAnimator expandLabelAnimator;
         private final AnimatorSet expandAnimator;
