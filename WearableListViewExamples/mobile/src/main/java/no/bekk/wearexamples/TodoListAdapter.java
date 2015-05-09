@@ -7,9 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
 import java.util.List;
 
 public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.TodoListViewHolder> {
@@ -31,8 +28,7 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.TodoLi
     public void onBindViewHolder(TodoListViewHolder todoListViewHolder, int i) {
         Item item = items.get(todoListViewHolder.getPosition());
         todoListViewHolder.contentView.setText(item.getContent());
-        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("MM/dd/yyyy");
-        todoListViewHolder.dateView.setText(dtfOut.print(item.getUpdatedDate()));
+        todoListViewHolder.dateView.setText(item.getUpdatedDate());
     }
 
     @Override

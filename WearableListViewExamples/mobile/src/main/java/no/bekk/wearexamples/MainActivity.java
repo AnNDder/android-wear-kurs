@@ -1,6 +1,12 @@
 package no.bekk.wearexamples;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,18 +17,21 @@ import android.widget.EditText;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.MessageApi;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
+import com.google.gson.Gson;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 
-public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+
+public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
     private List<Item> todoItems = new ArrayList<Item>();
     private RecyclerView todoItemList;
     private EditText itemInput;
@@ -36,9 +45,13 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         itemInput = (EditText) findViewById(R.id.item_input);
         addButton = (Button) findViewById(R.id.add_btn);
         todoItemList = (RecyclerView) findViewById(R.id.items_view);
-        populateTodoItems();
         todoItemList.setAdapter(new TodoListAdapter(this, todoItems));
         todoItemList.setLayoutManager(new LinearLayoutManager(this));
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,22 +59,23 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 Item item = new Item();
                 String content = itemInput.getText().toString();
                 item.setContent(content);
-                item.setUpdatedDate(new DateTime());
+                DateTimeFormatter dtfOut = DateTimeFormat.forPattern("MM/dd/yyyy");
+                item.setUpdatedDate(dtfOut.print(new DateTime()));
                 todoItems.add(0, item);
                 todoItemList.getAdapter().notifyDataSetChanged();
-                sendMessage("/new_item", content);
+                storeNewItem(item);
             }
         });
-
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .build();
+        IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new MessageReceiver(), messageFilter);
+        prePopulateList();
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        googleApiClient.disconnect();
+    public class MessageReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i("Message", "Received message " + intent.getExtras().getString("message"));
+        }
     }
 
     @Override
@@ -70,45 +84,10 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         googleApiClient.connect();
     }
 
-    private void populateTodoItems() {
-        Item firstItem = new Item();
-        firstItem.setContent("Kjøp Pepsi");
-        firstItem.setUpdatedDate(new DateTime());
-        Item secondItem = new Item();
-        secondItem.setContent("Kjøp Cola");
-        secondItem.setUpdatedDate(new DateTime());
-        Item thirdItem = new Item();
-        thirdItem.setContent("Kjøp Snus");
-        thirdItem.setUpdatedDate(new DateTime());
-        Item fourthItem = new Item();
-        fourthItem.setContent("Kjøp Taco");
-        fourthItem.setUpdatedDate(new DateTime());
-
-        todoItems.add(firstItem);
-        todoItems.add(secondItem);
-        todoItems.add(thirdItem);
-        todoItems.add(fourthItem);
-    }
-
-    private void sendMessage(final String path, final String content) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).    await();
-                for (Node node : nodes.getNodes()) {
-                    Log.i("NodeName", node.getDisplayName() + ", " + node.getId());
-                    MessageApi.SendMessageResult result =
-                            Wearable.MessageApi.sendMessage(googleApiClient, node.getId(),
-                            path, content.getBytes()).await();
-                    if (result.getStatus().isSuccess()) {
-                        Log.i("status", "Successfully sent");
-                    }
-                    else {
-                        Log.i("status", "Unsuccessfully sent");
-                    }
-                }
-            }
-        }).start();
+    @Override
+    protected void onStop() {
+        super.onStop();
+        googleApiClient.disconnect();
     }
 
     @Override
@@ -124,5 +103,43 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.i("Connection", "Failed");
+    }
+
+    private void populateTodoItems() {
+        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("MM/dd/yyyy");
+        Item firstItem = new Item();
+        firstItem.setContent("Kjøp Pepsi");
+        firstItem.setUpdatedDate(dtfOut.print(new DateTime()));
+        Item secondItem = new Item();
+        secondItem.setContent("Kjøp Cola");
+        secondItem.setUpdatedDate(dtfOut.print(new DateTime()));
+        Item thirdItem = new Item();
+        thirdItem.setContent("Kjøp Snus");
+        thirdItem.setUpdatedDate(dtfOut.print(new DateTime()));
+        Item fourthItem = new Item();
+        fourthItem.setContent("Kjøp Taco");
+        fourthItem.setUpdatedDate(dtfOut.print(new DateTime()));
+
+        todoItems.add(firstItem);
+        todoItems.add(secondItem);
+        todoItems.add(thirdItem);
+        todoItems.add(fourthItem);
+    }
+
+    private void storeNewItem(Item item) {
+        SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
+        Gson gson = StaticHelpers.getGson();
+        todoItems.clear();
+        todoItems.addAll(asList(gson.fromJson(StaticHelpers.read(prefs), Item[].class)));
+        todoItems.add(0, item);
+        StaticHelpers.write(prefs, todoItems);
+    }
+
+    private void prePopulateList() {
+        SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
+        StaticHelpers.delete(prefs);
+        todoItems.clear();
+        populateTodoItems();
+        StaticHelpers.write(prefs, todoItems);
     }
 }

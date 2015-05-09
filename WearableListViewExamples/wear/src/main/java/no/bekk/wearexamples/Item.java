@@ -1,10 +1,10 @@
 package no.bekk.wearexamples;
 
-import org.joda.time.DateTime;
+import com.google.android.gms.wearable.DataMap;
 
 public class Item {
     private String content;
-    private DateTime updatedDate;
+    private String updatedDate;
 
     public String getContent() {
         return content;
@@ -14,11 +14,25 @@ public class Item {
         this.content = content;
     }
 
-    public DateTime getUpdatedDate() {
+    public String getUpdatedDate() {
         return updatedDate;
     }
 
-    public void setUpdatedDate(DateTime updatedDate) {
+    public void setUpdatedDate(String updatedDate) {
         this.updatedDate = updatedDate;
+    }
+
+    public DataMap toDataMap() {
+        DataMap map = new DataMap();
+        map.putString("content", content);
+        map.putString("updatedDate", updatedDate);
+        return map;
+    }
+
+    public static Item fromDataMap(DataMap map) {
+        Item item = new Item();
+        item.setContent(map.getString("content"));
+        item.setUpdatedDate(map.getString("updatedDate"));
+        return item;
     }
 }
