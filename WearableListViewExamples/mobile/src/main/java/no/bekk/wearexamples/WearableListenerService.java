@@ -14,14 +14,18 @@ import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import no.bekk.wearexamples.domain.Item;
+
+import static java.util.Arrays.asList;
 
 public class WearableListenerService extends
         com.google.android.gms.wearable.WearableListenerService {
@@ -57,28 +61,38 @@ public class WearableListenerService extends
     public void onDataChanged(DataEventBuffer dataEvents) {
         Log.i("service", "Event received in WearableListenerService");
         for (DataEvent dataEvent : dataEvents) {
-            // Clear cache so that we are sure data is synced
-            clearDataItemCache(dataEvent);
             if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
                 DataItem item = dataEvent.getDataItem();
-                if (item.getUri().getPath().equals("/getItems") || item.getUri().getPath().equals("/itemsHaveChanged")) {
+                if (item.getUri().getPath().equals("/getItems")) {
                     SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
                     String itemsJson = StaticHelpers.read(prefs);
                     Item[] items = StaticHelpers.getGson().fromJson(itemsJson, Item[].class);
-                    replyWithItemsToCaller(items);
+                    replyWithItemsToCaller(asList(items), true);
+                }
+                else if (item.getUri().getPath().equals("/updateItems")) {
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    ArrayList<DataMap> dataMapItems = dataMap.getDataMapArrayList("items");
+                    List<Item> items = new ArrayList<Item>();
+                    for (DataMap map : dataMapItems) {
+                        items.add(Item.fromDataMap(map));
+                    }
+                    SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
+                    StaticHelpers.write(prefs, items);
+                    replyWithItemsToCaller(items, false);
                 }
             }
         }
     }
 
-    private void clearDataItemCache(DataEvent dataEvent) {
-        Wearable.DataApi.deleteDataItems(googleApiClient, dataEvent.getDataItem().getUri());
-    }
-
-    private void replyWithItemsToCaller(Item[] items) {
+    private void replyWithItemsToCaller(List<Item> items, boolean force) {
         ArrayList<DataMap> dataMaps = new ArrayList<DataMap>();
         for (Item i : items) {
             dataMaps.add(i.toDataMap());
+        }
+        if (force) {
+            DataMap timestamp = new DataMap();
+            timestamp.putLong("timestamp", System.currentTimeMillis());
+            dataMaps.add(timestamp);
         }
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/getItemsResponse");
         putDataMapReq.getDataMap().putDataMapArrayList("items", dataMaps);

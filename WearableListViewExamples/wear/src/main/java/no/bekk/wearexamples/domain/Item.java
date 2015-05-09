@@ -35,6 +35,7 @@ public class Item {
         DataMap map = new DataMap();
         map.putString("content", content);
         map.putString("updatedDate", updatedDate);
+        map.putBoolean("done", done);
         return map;
     }
 

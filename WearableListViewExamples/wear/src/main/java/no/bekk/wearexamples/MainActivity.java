@@ -24,8 +24,6 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
-import org.joda.time.DateTime;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,7 +60,7 @@ public class MainActivity extends Activity implements WearableListView.ClickList
 
     private void syncItems(final String path) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create(path);
-        putDataMapReq.getDataMap().putString("testKey", DateTime.now().toString());
+        putDataMapReq.getDataMap().putLong("timestamp", System.currentTimeMillis());
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
         PendingResult<DataApi.DataItemResult> pendingResult =
                 Wearable.DataApi.putDataItem(googleApiClient, putDataReq);
@@ -131,7 +129,27 @@ public class MainActivity extends Activity implements WearableListView.ClickList
 
     @Override
     public void onClick(WearableListView.ViewHolder viewHolder) {
-        Toast.makeText(this, "clicked row", Toast.LENGTH_SHORT).show();
+        Item item = items.get(viewHolder.getPosition());
+        item.setDone(item.isDone() ? false : true);
+        ArrayList<DataMap> dataMaps = new ArrayList<DataMap>();
+        for (Item i : items) {
+            dataMaps.add(i.toDataMap());
+        }
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/updateItems");
+        putDataMapReq.getDataMap().putDataMapArrayList("items", dataMaps);
+        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+        PendingResult<DataApi.DataItemResult> pendingResult =
+                Wearable.DataApi.putDataItem(googleApiClient, putDataReq);
+        pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override
+            public void onResult(DataApi.DataItemResult dataItemResult) {
+                if (dataItemResult.getStatus().isSuccess()) {
+                    Log.i("onClick", "SyncMessage successfully sent from WearActivity");
+                } else {
+                    Log.i("onClick", "Error sending syncMessage from WearActivity");
+                }
+            }
+        });
     }
 
     @Override

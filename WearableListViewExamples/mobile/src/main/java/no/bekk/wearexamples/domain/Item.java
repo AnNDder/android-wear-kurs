@@ -38,4 +38,12 @@ public class Item {
         map.putBoolean("done", done);
         return map;
     }
+
+    public static Item fromDataMap(DataMap map) {
+        Item item = new Item();
+        item.setContent(map.getString("content"));
+        item.setUpdatedDate(map.getString("updatedDate"));
+        item.setDone(map.getBoolean("done"));
+        return item;
+    }
 }

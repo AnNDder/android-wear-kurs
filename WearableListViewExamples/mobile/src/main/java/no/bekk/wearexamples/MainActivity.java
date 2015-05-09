@@ -20,6 +20,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -39,7 +43,7 @@ import no.bekk.wearexamples.listeners.ItemDoneListener;
 import static java.util.Arrays.asList;
 
 
-public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, ItemDoneListener,
+public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, ItemDoneListener, DataApi.DataListener,
         GoogleApiClient.OnConnectionFailedListener {
     private List<Item> todoItems = new ArrayList<Item>();
     private RecyclerView todoItemList;
@@ -81,6 +85,29 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         prePopulateList();
     }
 
+    @Override
+    public void onDataChanged(DataEventBuffer dataEvents) {
+        Log.i("MainActivity", "Event received in handheld MainActivity");
+        for (DataEvent dataEvent : dataEvents) {
+            if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
+                DataItem item = dataEvent.getDataItem();
+                if (item.getUri().getPath().equals("/getItemsResponse")) {
+                    SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
+                    String itemsJson = StaticHelpers.read(prefs);
+                    Item[] items = StaticHelpers.getGson().fromJson(itemsJson, Item[].class);
+                    todoItems.clear();
+                    todoItems.addAll(asList(items));
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            todoItemList.getAdapter().notifyDataSetChanged();
+                        }
+                    });
+                }
+            }
+        }
+    }
+
     public class MessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -103,16 +130,19 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     @Override
     public void onConnected(Bundle bundle) {
         Log.i("Connection", "Connected");
+        Wearable.DataApi.addListener(googleApiClient, this);
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         Log.i("Connection", "Suspended");
+        Wearable.DataApi.removeListener(googleApiClient, this);
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.i("Connection", "Failed");
+        Wearable.DataApi.removeListener(googleApiClient, this);
     }
 
     private void populateTodoItems() {
@@ -136,8 +166,9 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         todoItems.add(fourthItem);
     }
 
-    private void syncItems(final String path) {
+    private void syncItems(final ArrayList<DataMap> dataMaps, final String path) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create(path);
+        putDataMapReq.getDataMap().putDataMapArrayList("items", dataMaps);
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
         PendingResult<DataApi.DataItemResult> pendingResult =
                 Wearable.DataApi.putDataItem(googleApiClient, putDataReq);
@@ -145,7 +176,9 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             @Override
             public void onResult(DataApi.DataItemResult dataItemResult) {
                 if (dataItemResult.getStatus().isSuccess()) {
-                    Log.i("itemChangedMessage", "itemChangedMessage successfully sent from handheld activity");
+                    Log.i("onClick", "SyncMessage successfully sent from Handheld activity");
+                } else {
+                    Log.i("onClick", "Error sending syncMessage from Handheld activity");
                 }
             }
         });
@@ -154,11 +187,15 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     @Override
     public void itemHasChanged(Item item, int index) {
         todoItems.get(index).setDone(item.isDone());
-        SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
-        StaticHelpers.write(prefs, todoItems);
-        syncItems("/itemsHaveChanged");
+
+        ArrayList<DataMap> dataMaps = new ArrayList<DataMap>();
+        for (Item i : todoItems) {
+            dataMaps.add(i.toDataMap());
+        }
+        syncItems(dataMaps, "/updateItems");
     }
 
+    // For populating list
     private void storeNewItem(Item item) {
         SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
         Gson gson = StaticHelpers.getGson();

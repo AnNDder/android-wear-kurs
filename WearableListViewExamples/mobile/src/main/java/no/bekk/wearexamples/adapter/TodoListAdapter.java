@@ -53,6 +53,12 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.TodoLi
         Item item = items.get(todoListViewHolder.getPosition());
         todoListViewHolder.contentView.setText(item.getContent());
         todoListViewHolder.dateView.setText(item.getUpdatedDate());
+        if (item.isDone()) {
+            todoListViewHolder.doneImageView.setVisibility(View.VISIBLE);
+        }
+        else {
+            todoListViewHolder.doneImageView.setVisibility(View.GONE);
+        }
     }
 
     @Override
