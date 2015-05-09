@@ -42,6 +42,7 @@ public class WearableListenerService extends
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
+        Log.i("service", "Message received in WearableListenerService");
         super.onMessageReceived(messageEvent);
         if (messageEvent.getPath().equals("/hello")) {
             Intent messageIntent = new Intent(Intent.ACTION_SEND);
@@ -54,6 +55,7 @@ public class WearableListenerService extends
     public void onDataChanged(DataEventBuffer dataEvents) {
         Log.i("service", "Event received in WearableListenerService");
         for (DataEvent dataEvent : dataEvents) {
+            // Clear cache so that we are sure data is synced
             clearDataItemCache(dataEvent);
             if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
                 DataItem item = dataEvent.getDataItem();

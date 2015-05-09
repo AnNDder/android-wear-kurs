@@ -9,13 +9,11 @@ import java.util.List;
 
 public class StaticHelpers {
     public static Gson getGson() {
-        GsonBuilder gsonb = new GsonBuilder();
-        return gsonb.create();
+        return new GsonBuilder().create();
     }
 
     public static void write(SharedPreferences prefs, List<Item> items) {
-        Gson gson = getGson();
-        String value = gson.toJson(items);
+        String value = getGson().toJson(items);
         SharedPreferences.Editor e = prefs.edit();
         e.putString("items", value);
         e.commit();

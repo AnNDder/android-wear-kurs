@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.wearable.view.WatchViewStub;
 import android.support.wearable.view.WearableListView;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -32,7 +31,6 @@ import java.util.List;
 
 public class MainActivity extends Activity implements WearableListView.ClickListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, DataApi.DataListener {
-    private TextView headerView;
     private WearableListView listView;
     private List<Item> items = new ArrayList<Item>();
     private GoogleApiClient googleApiClient;
@@ -50,11 +48,10 @@ public class MainActivity extends Activity implements WearableListView.ClickList
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
-                headerView = (TextView) stub.findViewById(R.id.header);
                 listView = (WearableListView) stub.findViewById(R.id.wearable_list);
                 listView.setAdapter(new MyListAdapter(items, MainActivity.this));
                 listView.setClickListener(MainActivity.this);
-                sendMessage("/hello", "Hva skjer?");
+                sendMessage("/hello", "Hello World");
                 syncItems("/getItems");
             }
         });
@@ -76,12 +73,13 @@ public class MainActivity extends Activity implements WearableListView.ClickList
         });
     }
 
+    // Send message using the Message API
     private void sendMessage(final String path, final String content) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
-                Log.i("status", "Trying to send message");
+                Log.i("sendMessage", "Trying to send message");
                 for (Node node : nodes.getNodes()) {
                     Log.i("NodeName", node.getDisplayName() + ", " + node.getId());
                     MessageApi.SendMessageResult result =

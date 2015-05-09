@@ -66,6 +66,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 storeNewItem(item);
             }
         });
+        // Receive messages broadcast from the WearableListenerService
         IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
         LocalBroadcastManager.getInstance(this).registerReceiver(new MessageReceiver(), messageFilter);
         prePopulateList();
