@@ -1,0 +1,41 @@
+---
+layout: default
+title: Notifications
+---
+<img src="{{ site.baseurl }}/img/example2.png" class="wear-example-square"/>
+<img src="{{ site.baseurl }}/img/example1.png" class="wear-example-rect"/>
+<div>
+  Det finnes to forskjellige typer Notifications: Bridged og Contextual. Bridged får man automatisk hvis man bruker Notifications på telefonen, som feks når man mottar en epost. Contextual er Notifications som oppstår akkurat når brukeren trenger det, som feks når han eller hun er i nærheten av en Pin fra Pinterest. Vi skal fokusere på sistnevnte i denne Workshopen. Bildene er hentet fra: <a href="https://developer.android.com/design/wear/patterns.html"> https://developer.android.com/design/wear/patterns.html</a>
+</div>
+<h3>Oppsett</h3>
+Å lage Notifications for Android Wear er veldig likt det å lage Notifications for en håndholdt enhet. Vi bruker en <code>NotificationManager</code> til å sende et Notification-objekt vi setter opp. Dette objektet kan inneholde tekstinnhold og ikon, samt en <code> PendingIntent</code> som beskriver hvilken Activity på telefonen som kan åpnes. Å åpne denne Activitien kan gjøres ved å swipe til venstre. Da vises en "open on phone"-melding.
+
+{% highlight java %}
+Intent viewIntent = new Intent(this, MainActivity.class);
+// Lag et PendingIntent med Activity som åpnes ved trykk på "open on phone"
+PendingIntent viewPendingIntent =
+    PendingIntent.getActivity(this, 0, viewIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+NotificationCompat.Builder notificationBuilder =
+    new NotificationCompat.Builder(this)
+        .setSmallIcon(R.drawable.icon)
+        .setLargeIcon(BitmapFactory.decodeResource(
+            getResources(), R.drawable.icon))
+        .setContentTitle("Tittel")
+        .setContentText("Godset fra Drammen")
+        .setAutoCancel(true)
+        .setContentIntent(viewPendingIntent);
+NotificationManagerCompat notificationManager =
+    NotificationManagerCompat.from(this);
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+{% endhighlight %}
+
+Eksempelet over viser et enkelt oppsett av en Notification. Dersom man vil definere flere handlinger i en Notification kan man bruke <code>addAction()</code> Denne metoden tar inn et ikon og en PendingIntent og vil være tilgjengelig ved swipe.
+
+- Kan lage på telefonen (dukker opp både på telefonen og klokka)
+- Kan lages bare på klokka 
+- Følger automatisk med en "åpne-på-telefonen" action
+- Kan legge til andre actions
+- Bilder må være tilgjengelig på watch
+
+<h3>Navigasjon</h3>
+

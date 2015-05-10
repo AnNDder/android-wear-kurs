@@ -1,11 +1,17 @@
 package no.bekk.wearexamples;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -45,6 +51,8 @@ import static java.util.Arrays.asList;
 
 public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, ItemDoneListener, DataApi.DataListener,
         GoogleApiClient.OnConnectionFailedListener {
+    private final int NOTIFICATION_ID = 001;
+
     private List<Item> todoItems = new ArrayList<Item>();
     private RecyclerView todoItemList;
     private EditText itemInput;
@@ -77,12 +85,38 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 todoItems.add(0, item);
                 todoItemList.getAdapter().notifyDataSetChanged();
                 storeNewItem(item);
+                sendNotification(item.getContent());
             }
         });
         // Receive messages broadcast from the WearableListenerService
         IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
         LocalBroadcastManager.getInstance(this).registerReceiver(new MessageReceiver(), messageFilter);
         prePopulateList();
+    }
+
+    private void sendNotification(String content) {
+        Intent viewIntent = new Intent(this, MainActivity.class);
+        // Cancel already running activity before starting
+        PendingIntent viewPendingIntent =
+                PendingIntent.getActivity(this, 0, viewIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
+        bigStyle.bigText(content);
+
+        // Finne ut hvorfor jeg ikke får med ikon + farger osv
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_action_done)
+                        .setLargeIcon(BitmapFactory.decodeResource(
+                                getResources(), R.drawable.ic_action_done))
+                        .setContentTitle("Her har det skjedd noe!")
+                        .setContentText(content)
+                        .setColor(Color.CYAN)
+                        .setAutoCancel(true)
+                        .setStyle(bigStyle)
+                        .setContentIntent(viewPendingIntent);
+        NotificationManagerCompat notificationManager =
+                NotificationManagerCompat.from(this);
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
     @Override

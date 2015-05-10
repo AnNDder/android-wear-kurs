@@ -5,6 +5,37 @@ title: Komponenter
 En Android Wear app kan lages både som en stand alone app og som en modul i et prosjekt bestående av flere moduler. Dersom den er sistnevnte vil installasjon av klokkemodulen skje automatisk når den håndholdte modulen installeres på for eksempel en telefon. Den er på den måten et tillegg til hovedfunksjonaliteten som tilbys gjennom den håndholdte modulen. Et unntak er under utvikling. Da vil man installere klokkemodulen direkte via USB eller Bluetooth. For hvordan dette gjøres, se <a href="installasjonsveiledning.html">installasjonsveiledningen</a>. Dersom den er en stand alone app vil den installeres direkte når man laster den ned fra Google Play, uten å måtte installere en håndholdt modul først. Den vil dermed ikke dukke opp på den 
 håndholdte enheten som en applikasjon.
 
+<h3>Activity</h3>
+En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
+
+Nedenfor er et eksempel på <code>onCreate()</code>. Dette er den første metoden som trigges når activitien kjører. Her vil komponenter man skal bruke i settes opp. Man kaller også <code>setContentView()</code> for å koble til et view, altså en XML layoutfil. Oppsettet av en WatchViewStub som ble vist i forrige del, skjer typisk i <code>onCreate()</code>
+
+{% highlight java %}
+public class MainActivity extends Activity {
+    private TextView mTextView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mTextView = (TextView) findViewById(R.id.text); 
+    }
+}
+{% endhighlight %}
+
+<h3>Android Manifest</h3>
+Android Manifest er appens kontrakt og inneholder blant annet alle activities appen består av og hvilke tilganger den skal ha. Eksempler på tilganger er: internett, posisjon eller kamera. I manifestet kan man også for hver activity spesifisere flere properties, som for eksempel en label, som kan bli brukt dersom man vil starte applikasjonen via tale.
+
+{% highlight xml %}
+<manifest ... >
+  <application ... >
+      <activity android:name=".MainActivity" android:label="MainActivity"/>
+      ...
+  </application ... >
+  ...
+</manifest >
+{% endhighlight %}
+
 <h3>Layout</h3>
 I Android blir views skrevet i XML og en layoutfil beskriver hvordan elementene skal posisjoneres for eksempel i forhold til hverandre. Mer informasjon
 om de grunnleggende layouttypene finnes i <a href="http://bekk.github.io/android101/pages/view-layout.html">Android 101 kurset.</a>
@@ -159,36 +190,6 @@ private final class ItemView extends FrameLayout implements WearableListView.OnC
 
 {% endhighlight %}
 
-<h3>Activity</h3>
-En activity er ansvarlig for å lage et view og håndtere interaksjon og state i forbindelse med dette. I et MVC pattern kan en activity bli sett på som en kontroller. Ofte vil det være samsvar mellom én activity og ett skjermbilde brukeren ser, dersom man ser bort i fra avanserte konsepter som Fragments (for denne workshopen vil det være én-til-én forhold mellom en activity og et skjermbilde). Ellers, så har en activity flere metoder man kan benytte seg av. Dette er metoder som håndterer livssyklusen og som for eksempel trigges når activitien opprettes eller avsluttes.
-
-Nedenfor er et eksempel på <code>onCreate()</code>. Dette er den første metoden som trigges når activitien kjører. Her vil komponenter man skal bruke i settes opp. Man kaller også <code>setContentView()</code> for å koble til et view, altså en XML layoutfil. Oppsettet av en WatchViewStub som ble vist i forrige del, skjer typisk i <code>onCreate()</code>
-
-{% highlight java %}
-public class MainActivity extends Activity {
-    private TextView mTextView;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        mTextView = (TextView) findViewById(R.id.text); 
-    }
-}
-{% endhighlight %}
-
-<h3>Android Manifest</h3>
-Android Manifest er appens kontrakt og inneholder blant annet alle activities appen består av og hvilke tilganger den skal ha. Eksempler på tilganger er: internett, posisjon eller kamera. I manifestet kan man også for hver activity spesifisere flere properties, som for eksempel en label, som kan bli brukt dersom man vil starte applikasjonen via tale.
-
-{% highlight xml %}
-<manifest ... >
-  <application ... >
-      <activity android:name=".MainActivity" android:label="MainActivity"/>
-      ...
-  </application ... >
-  ...
-</manifest >
-{% endhighlight %}
 
 
 

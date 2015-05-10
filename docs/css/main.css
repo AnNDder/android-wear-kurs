@@ -26,3 +26,12 @@ ol, ul {
     padding: 20px 0 10px 0px;
     margin-left: 0;
 }
+
+.wear-example-square {
+	height: 200px;
+	width: 200px;
+}
+.wear-example-rect {
+	height: 200px;
+	width: 350px;
+}
