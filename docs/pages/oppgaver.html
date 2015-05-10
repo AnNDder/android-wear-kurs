@@ -10,18 +10,20 @@ I denne oppgaven skal du sette opp kommunikasjonen mellom telefonen og klokka, o
   <li>Sett opp en knapp i wearable-modulen som sender en melding til mobile-modulen. Denne meldingen kan du vise som en Toast</li>
 </ol>
 
-<h3>2. Notifications og navigasjon</h3>
-I dag er vi alle fotballfans, og mer spesifikt tilhengere av Strømsgodset. Du får dessverre ikke vært tilstede på stadion i dag, men du venter spent på at lagoppstillingen skal bli offentliggjort. Oppgave 2 består av at vi får en Notification på klokka med lagoppstillingen. Det som må implementeres er visning av Notification i form av et Card View, muligheten for å swipe og se hvilke spillere som skal spille, samt muligheten for å vise lagoppstillingen på telefonen. 
+<h3>2. Notification</h3>
+I oppgave 2 og 3 skal vi lage en enkel TODO-app. Første steg på veien er å vise en Notification på klokka når det blir lagt til et item i TODO-lista på 
+telefonen.
 <ol>
-  <li>Lag en Contextual Notification som du sender fra mobilen til klokka. Denne skal representere lagoppstillingen og må inneholde et ikon, en tittel, innhold og en pending intent.</li>
-  <li>Lag en GridPager og legg til navigasjonsnivåer vertikalt for hver spiller. Du kan også legge inn horisontal navigasjon også, dersom du vil vise mer informasjon om en spesifikk spiller</li>
-  <li>Ved trykk på "Open"-knappen som er synlig ved swipe til til venstre, skal lagoppstillingen vises på telefonen. Ferdig kode er allerede satt opp for å vise listen. Din oppgave er å starte denne Activityen.</li>
+  <li>Hent ned TODO-branchen på Git. Denne inneholder kode for å sette opp en liste på telefonen, med mulighet for å legge til nye elementer. 
+  <li>Lag en Contextual Notification som du sender fra mobilen til klokka når et element legges til i lista. Denne må inneholde et ikon, en tittel, innhold og en pending intent.</li>
+  <li>Ved trykk på "Open"-knappen som er synlig ved swipe til til venstre, skal TODO-lista vises på telefonen. Din oppgave er å starte riktig Activity på telefonen.</i>
+  <li>Bonus: Bruk en GridViewPager til å utvide Notifications med flere navigasjonsnivåer. Ved vertikal scrolling kan du vise en knapp der trykk sender en melding med Message API til telefonen. Denne kan så vise som en Toast.</li>
 </ol>
 
-<h3>3. TODO-app</h3>
-I denne oppgaven skal vi lage en enkel TODO-app. Lista skal vises både på telefonen og på klokka. Når items fullføres på telefonen eller klokka, skal det oppdateres på begge enheter.
+<h3>3. Listevisning på klokka</h3>
+Vi vil jo også kunne se TODO-lista vår på klokka, samt fullføre elementer. 
 <ol>
-  <li>Hent ned TODO-app branchen på Git. Denne inneholder kode for å sette opp en liste på både telefonen. Det som må implementeres er kommunikasjon av listeinnhold mellom enhetene og selve visningen på klokka. Her kan du bruke et WearableListView</li>
+  <li>Sett opp visning av lista på klokka. Her kan du bruke et WearableListView. Hint: For sending av data fra telefonen til klokka kan du sette opp en WearableListenerService</li>
   <li>Legg til at fullføring av items i lista på telefonen (ved klikk på en rad) oppdaterer lista på klokka</li>
   <li>Legg til at fullføring av items i lista på klokka (ved klikk på en rad) oppdaterer lista på telefonen</li>
   <li>Bonus: Legg til listeelementer vha tale</li>
