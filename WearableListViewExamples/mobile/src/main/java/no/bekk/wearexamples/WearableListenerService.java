@@ -77,7 +77,7 @@ public class WearableListenerService extends
                         items.add(Item.fromDataMap(map));
                     }
                     SharedPreferences prefs = getSharedPreferences("todoItemList", Context.MODE_PRIVATE);
-                    StaticHelpers.write(prefs, items);
+                        StaticHelpers.write(prefs, items);
                     replyWithItemsToCaller(items, false);
                 }
             }

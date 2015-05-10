@@ -60,6 +60,7 @@ public class MainActivity extends Activity implements WearableListView.ClickList
 
     private void syncItems(final String path) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create(path);
+        // To ensure request is always received in the WearableListenerService
         putDataMapReq.getDataMap().putLong("timestamp", System.currentTimeMillis());
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
         PendingResult<DataApi.DataItemResult> pendingResult =
