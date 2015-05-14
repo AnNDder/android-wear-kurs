@@ -2,3 +2,37 @@
 layout: default
 title: Installasjonsveiledning
 ---
+
+For denne workshopen trenger man i hovedsak tre ting: Android Studio med SDK, en telefon og ei klokke/emulator.
+
+<h3> Android Studio </h3>
+Android Studio er den foretrukne IDE'en for Android-utvikling, og kan lastes ned <a href="http://developer.android.com/tools/studio/index.html"> her </a>.
+For de som er vant til IntelliJ, så vil key bindings osv for det meste være helt likt.
+
+<h3> Telefon </h3>
+Det er ikke rett frem å koble en telefonemulator opp mot en klokkeemulator. Derfor ønsker vi at alle har en faktisk telefon det kan testes på. Telefonen må kjøre minimum versjon 4.3 og ha <a href="https://play.google.com/store/apps/details?id=com.google.android.wearable.app">Android Wear</a> appen fra Google Play installert. Dersom du likevel vil prøve å koble opp en telefonemulator til en klokkeemulator, kan du forsøke instruksjonene <a href="http://stackoverflow.com/questions/25205888/pairing-android-emulator-with-wear-emulator"> her </a>
+
+<h3> Klokke </h3>
+Har du ei klokke er det rett frem å bruke denne. Du må bare sette opp Bluetooth-tilkoblingen mellom telefonen og klokka. Dersom du skal bruke en emulator må du laste ned denne via AVD manager (Android Studio: Toos -> Android -> AVD manager). Pass på at SDK-versjonen matcher telefonens Android-versjon. 
+
+<h3> Tilkobling og debugging </h3>
+Dersom det ikke allerede er gjort, husk å enable developer settings på både klokke og telefon. Dette kan gjøres ved å gå til <i>Innstillinger</i> og deretter trykke på byggenummeret helt til det kommer en melding om at du nå kan utvikle. Det neste steget er å gå inn i developer options og tillate ADB debugging og debugging over Bluetooth.
+<h4>Emulator</h4>
+<ol>
+	<li>Koble telefonen til PC'en</li>
+	<li>Sett opp port forwarding fra emulatoren: <code>adb -d forward tcp:5601 tcp:5601</code> Dette må gjøres hver gang du kobler til</li>
+	<li>I menyen i Android Wear appen på telefonen, trykk <i>Pair with a new wearable</i>. I menyen i det neste skjermbildet trykker du så på <i>Pair with emulator</i></li>
+</ol>
+
+<h4>Klokke</h4>
+<ol>
+	<li>Koble både telefonen og klokka til PC'en</li>
+	<li>I menyen i Android Wear appen på telefonen, trykk <i>Pair with a new wearable</i>. I skjermbildet som nå dukker opp skal klokka vises.
+		Velg klokken og følg instruksjonene. Dersom det kommer opp en dialog som spør om du tillater debugging, trykk OK</li>
+</ol>
+
+Kjør <code>adb devices</code>. Her skal både telefon og klokke/emulator dukke opp
+
+<h3>Kjøring av apper</h3>
+Under utvikling må du installere appmodulene separat på telefon og klokke. Dette gjelder også dersom du signerer med debug-key.
+Ved release vil klokkemodulen pakkes inn i telefonmodulen og bli automatisk installert hos brukeren over Bluetooth.
