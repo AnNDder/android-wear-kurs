@@ -1,3 +1,3 @@
 # android-wear-kurs
 
-Alt kursmateriell finnes her: http://bekk.github.io/android101/
+Alt kursmateriell finnes her: http://bekk.github.io/android-wear-kurs/
