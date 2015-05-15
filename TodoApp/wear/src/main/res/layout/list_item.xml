@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<no.bekk.wearworkshop.todoapp.WearableListItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <android.support.wearable.view.CircledImageView
+        android:id="@+id/image"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:alpha="0.5"
+        android:src="@drawable/ic_action_attach"
+        app:circle_border_color="#FFFFFFFF"
+        app:circle_border_width="1dp"
+        app:circle_radius="23dp" />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="52dp"
+        android:alpha="0.5"
+        android:fontFamily="sans-serif-condensed-light"
+        android:gravity="center_vertical"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+</no.bekk.wearworkshop.todoapp.WearableListItemLayout>
