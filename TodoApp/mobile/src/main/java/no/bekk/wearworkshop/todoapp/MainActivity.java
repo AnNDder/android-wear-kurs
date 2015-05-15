@@ -1,8 +1,12 @@
 package no.bekk.wearworkshop.todoapp;
 
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +25,8 @@ import static android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
 public class MainActivity extends AppCompatActivity implements TextView.OnEditorActionListener, ItemChangedListener {
 
     public static final String SHARED_PREFS_NAME = "todoList";
+    private static final int NOTIFICATION_ID = 1;
+
     private final List<Item> items = new ArrayList<>();
     private RecyclerView list;
     private SharedPrefsHelper sharedPrefs;
@@ -58,6 +64,28 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         persistUnfinishedItems();
     }
 
+    private void sendNotification(String content) {
+        NotificationCompat.WearableExtender wearableExtender =
+                new NotificationCompat.WearableExtender()
+                        .setHintHideIcon(true);
+
+        Intent viewIntent = new Intent(this, MainActivity.class);
+        PendingIntent viewPendingIntent = PendingIntent.getActivity(this, 0, viewIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_action_done)
+                        .setContentTitle("TODO-Liste")
+                        .setContentText(content)
+                        .setAutoCancel(true)
+                        .extend(wearableExtender)
+                        .setContentIntent(viewPendingIntent);
+
+        NotificationManagerCompat notificationManager =
+                NotificationManagerCompat.from(this);
+
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+    }
+
     private void persistUnfinishedItems() {
         List<Item> unfinishedItems = new ArrayList<>();
         for (Item item : items) {
@@ -83,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             Item item = new Item(content);
             items.add(0, item);
             list.getAdapter().notifyDataSetChanged();
-
+            sendNotification(content);
             return true;
         }
         return false;
