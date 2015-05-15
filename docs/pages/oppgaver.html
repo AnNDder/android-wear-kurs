@@ -5,10 +5,19 @@ title: Oppgaver
 
 <h3>1. Kom igang</h3>
 I denne oppgaven skal du sette opp kommunikasjonen mellom telefonen og klokka, og bruke Message API. For å lytte på meldinger skal du bruke 
-<code>DataApi.DataListener</code>
+<code>DataApi.DataListener</code>. Begynn med å opprette et nytt prosjekt i Android Studio. Husk å velge at du skal ha en klokkemodul i tillegg til telefonmodulen. 
+<br/>
+NB: Husk å definere Google Play Services versjon i manifestet under Application-tagen:
+{% highlight xml %}
+    <meta-data
+	    android:name="com.google.android.gms.version"
+        android:value="@integer/google_play_services_version" />
+{% endhighlight %}
+
 <ol>
   <li>Sett opp en knapp i mobile-modulen som sender en melding til wearable-modulen. Denne meldingen kan du vise som en Toast</li>
   <li>Sett opp en knapp i wearable-modulen som sender en melding til mobile-modulen. Denne meldingen kan du vise som en Toast</li>
+  <li>Endre oppgave 1 og 2 til å sende DataItems istedenfor å bruke Message API</lI>
 </ol>
 
 <h3>2. Notifications</h3>
