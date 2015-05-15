@@ -18,14 +18,16 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.TodoLi
 
     private final Context context;
     private final List<Item> items;
+    private final ItemChangedListener itemChangedListener;
 
-    public TodoListAdapter(final Context context, final List<Item> items) {
+    public TodoListAdapter(final Context context, final List<Item> items, ItemChangedListener itemChangedListener) {
         this.context = context;
         this.items = items;
+        this.itemChangedListener = itemChangedListener;
     }
 
     @Override
-    public TodoListViewHolder onCreateViewHolder(final ViewGroup viewGroup, final int position) {
+    public TodoListViewHolder onCreateViewHolder(final ViewGroup viewGroup, final int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.list_item, viewGroup, false);
         final TodoListViewHolder viewHolder = new TodoListViewHolder(view);
         viewHolder.stateView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -34,6 +36,7 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.TodoLi
                 int oldPaintFlags = viewHolder.contentView.getPaintFlags();
                 int newPaintFlags = isChecked ? oldPaintFlags | Paint.STRIKE_THRU_TEXT_FLAG : oldPaintFlags & (~Paint.STRIKE_THRU_TEXT_FLAG);
                 viewHolder.contentView.setPaintFlags(newPaintFlags);
+                itemChangedListener.itemChanged(viewHolder.getAdapterPosition());
             }
         });
         return viewHolder;

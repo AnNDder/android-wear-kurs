@@ -15,4 +15,8 @@ public class Item {
     public boolean isDone() {
         return done;
     }
+
+    public void flipState() {
+        done = !done;
+    }
 }
