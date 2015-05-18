@@ -10,12 +10,16 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.ArrayList;
@@ -48,11 +52,25 @@ public class WearMainActivity extends Activity implements DataApi.DataListener, 
             public void onLayoutInflated(WatchViewStub stub) {
                 listView = (WearableListView) stub.findViewById(R.id.wearable_list);
                 listView.setAdapter(new WearListAdapter(WearMainActivity.this, items));
+                sendPullRequest();
             }
         });
 
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID_EXTRA, -1));
+    }
+
+    private void sendPullRequest() {
+        PendingResult<NodeApi.GetConnectedNodesResult> nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient);
+        nodes.setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>() {
+            @Override
+            public void onResult(NodeApi.GetConnectedNodesResult getConnectedNodesResult) {
+                for (Node node : getConnectedNodesResult.getNodes()) {
+                    Wearable.MessageApi.sendMessage(googleApiClient, node.getId(), "/getItems", new byte[0]);
+                }
+            }
+        });
+
     }
 
     @Override

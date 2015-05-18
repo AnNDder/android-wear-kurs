@@ -6,21 +6,15 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
-import com.google.android.gms.wearable.PutDataMapRequest;
-import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.ArrayList;
@@ -63,28 +57,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     @Override
     public void itemChanged(int position) {
         items.get(position).flipState();
-        syncItems();
-    }
-
-    private void syncItems() {
-        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/updateItems");
-
-        ArrayList<DataMap> datamaps = new ArrayList<>();
-        for (Item item : items) {
-            datamaps.add(item.toDataMap());
-        }
-        putDataMapRequest.getDataMap().putDataMapArrayList("items", datamaps);
-
-        PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
-        PendingResult<DataApi.DataItemResult> pendingResult = Wearable.DataApi.putDataItem(googleApiClient, putDataRequest);
-        pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-            @Override
-            public void onResult(DataApi.DataItemResult dataItemResult) {
-                if (!dataItemResult.getStatus().isSuccess()) {
-                    Log.w("syncItems", "Unable to sync items to wearable");
-                }
-            }
-        });
+        SyncHelper.syncItems(items, googleApiClient);
     }
 
     @Override
@@ -149,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             items.add(0, item);
             list.getAdapter().notifyDataSetChanged();
             sendNotification(content);
-            syncItems();
+            SyncHelper.syncItems(items, googleApiClient);
             return true;
         }
         return false;
