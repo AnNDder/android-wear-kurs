@@ -50,7 +50,7 @@ public class WearableListenerService extends com.google.android.gms.wearable.Wea
         for (DataEvent dataEvent : dataEvents) {
             if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
                 DataItem dataItem = dataEvent.getDataItem();
-                if (dataItem.getUri().getPath().equals("/updateItems")) {
+                if (dataItem.getUri().getPath().equals("/updateItemsFromWearable")) {
                     DataMap dataMap = DataMapItem.fromDataItem(dataItem).getDataMap();
                     ArrayList<DataMap> dataMapItems = dataMap.getDataMapArrayList("items");
                     ArrayList<Item> items = new ArrayList<>();

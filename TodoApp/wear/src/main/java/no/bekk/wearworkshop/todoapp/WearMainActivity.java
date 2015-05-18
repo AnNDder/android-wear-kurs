@@ -136,7 +136,7 @@ public class WearMainActivity extends Activity implements DataApi.DataListener, 
 
     @Override
     public void onClick(WearableListView.ViewHolder viewHolder) {
-        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/updateItems");
+        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/updateItemsFromWearable");
 
         Item clickedItem = items.get(viewHolder.getPosition());
         clickedItem.flipState();
