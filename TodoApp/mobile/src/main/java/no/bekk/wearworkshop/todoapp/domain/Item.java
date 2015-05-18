@@ -10,6 +10,11 @@ public class Item {
         this.content = content;
     }
 
+    public Item(String content, boolean done) {
+        this.content = content;
+        this.done = done;
+    }
+
     public String getContent() {
         return content;
     }
@@ -20,6 +25,10 @@ public class Item {
 
     public void flipState() {
         done = !done;
+    }
+
+    public static Item fromDataMap(DataMap dataMapItem) {
+        return new Item(dataMapItem.getString("content"), dataMapItem.getBoolean("done"));
     }
 
     public DataMap toDataMap() {

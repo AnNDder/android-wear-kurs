@@ -3,8 +3,17 @@ package no.bekk.wearworkshop.todoapp;
 import android.content.Context;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
+
+import java.util.ArrayList;
+
+import no.bekk.wearworkshop.todoapp.domain.Item;
 
 public class WearableListenerService extends com.google.android.gms.wearable.WearableListenerService {
 
@@ -36,4 +45,22 @@ public class WearableListenerService extends com.google.android.gms.wearable.Wea
         }
     }
 
+    @Override
+    public void onDataChanged(DataEventBuffer dataEvents) {
+        for (DataEvent dataEvent : dataEvents) {
+            if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
+                DataItem dataItem = dataEvent.getDataItem();
+                if (dataItem.getUri().getPath().equals("/updateItems")) {
+                    DataMap dataMap = DataMapItem.fromDataItem(dataItem).getDataMap();
+                    ArrayList<DataMap> dataMapItems = dataMap.getDataMapArrayList("items");
+                    ArrayList<Item> items = new ArrayList<>();
+                    for (DataMap dataMapItem : dataMapItems) {
+                        items.add(Item.fromDataMap(dataMapItem));
+                    }
+                    sharedPrefs.write(items);
+                }
+            }
+        }
+
+    }
 }

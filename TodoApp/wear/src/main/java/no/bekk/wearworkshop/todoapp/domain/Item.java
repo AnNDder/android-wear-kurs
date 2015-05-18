@@ -19,7 +19,18 @@ public class Item {
         return done;
     }
 
+    public void flipState() {
+        done = !done;
+    }
+
     public static Item fromDataMap(DataMap dataMapItem) {
         return new Item(dataMapItem.getString("content"), dataMapItem.getBoolean("done"));
+    }
+
+    public DataMap toDataMap() {
+        DataMap map = new DataMap();
+        map.putString("content", content);
+        map.putBoolean("done", done);
+        return map;
     }
 }

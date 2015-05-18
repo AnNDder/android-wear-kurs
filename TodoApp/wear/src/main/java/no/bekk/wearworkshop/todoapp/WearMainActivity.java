@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.os.Bundle;
 import android.support.wearable.view.WatchViewStub;
 import android.support.wearable.view.WearableListView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -20,6 +21,8 @@ import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.ArrayList;
@@ -27,7 +30,8 @@ import java.util.List;
 
 import no.bekk.wearworkshop.todoapp.domain.Item;
 
-public class WearMainActivity extends Activity implements DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class WearMainActivity extends Activity implements DataApi.DataListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, WearableListView.ClickListener {
 
     public static final String NOTIFICATION_ID_EXTRA = "NOTIFICATION_ID";
 
@@ -52,6 +56,7 @@ public class WearMainActivity extends Activity implements DataApi.DataListener, 
             public void onLayoutInflated(WatchViewStub stub) {
                 listView = (WearableListView) stub.findViewById(R.id.wearable_list);
                 listView.setAdapter(new WearListAdapter(WearMainActivity.this, items));
+                listView.setClickListener(WearMainActivity.this);
                 sendPullRequest();
             }
         });
@@ -127,5 +132,34 @@ public class WearMainActivity extends Activity implements DataApi.DataListener, 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Wearable.DataApi.removeListener(googleApiClient, this);
+    }
+
+    @Override
+    public void onClick(WearableListView.ViewHolder viewHolder) {
+        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/updateItems");
+
+        Item clickedItem = items.get(viewHolder.getPosition());
+        clickedItem.flipState();
+        ArrayList<DataMap> datamaps = new ArrayList<>();
+        for (Item item : items) {
+            datamaps.add(item.toDataMap());
+        }
+        putDataMapRequest.getDataMap().putDataMapArrayList("items", datamaps);
+
+        PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
+        PendingResult<DataApi.DataItemResult> pendingResult = Wearable.DataApi.putDataItem(googleApiClient, putDataRequest);
+        pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override
+            public void onResult(DataApi.DataItemResult dataItemResult) {
+                if (!dataItemResult.getStatus().isSuccess()) {
+                    Log.w("syncItems", "Unable to sync items to wearable");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onTopEmptyRegionClick() {
+
     }
 }
