@@ -1,5 +1,7 @@
 package no.bekk.wearworkshop.todoapp.domain;
 
+import com.google.android.gms.wearable.DataMap;
+
 public class Item {
     private final String content;
     private boolean done = false;
@@ -18,5 +20,12 @@ public class Item {
 
     public void flipState() {
         done = !done;
+    }
+
+    public DataMap toDataMap() {
+        DataMap map = new DataMap();
+        map.putString("content", content);
+        map.putBoolean("done", done);
+        return map;
     }
 }
