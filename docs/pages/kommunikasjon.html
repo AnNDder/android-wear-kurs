@@ -51,7 +51,7 @@ Wearable.MessageApi.sendMessage(mGoogleApiClient, nodeId, UNIQUE_PATH, new byte[
             @Override public void onResult(MessageApi.SendMessageResult sendMessageResult) {
                 // Kall på sendMessageResult.getStatus().isSuccess() for å se status på meldingen
             }
-        );
+        });
 {% endhighlight %}
 
 <h4>Motta melding</h4>
@@ -75,3 +75,47 @@ til et <code>byte</code>-array med data (maks 100KB).</p>
 
 <p>I stedet for å implementere <code>DataItem</code> direkte, vil man typisk bruke <code>DataMap</code>-klassen som lar oss manipulere data i key-value-par.
 <code>DataMap</code> vil også håndtere serialisering og deserialisering automatisk.</p>
+
+<h4>Send data</h4>
+
+<p>Koden under vil sende listen med <code>DataMap</code> til alle noder som er koblet til avsenderen, og som har registrert seg selv som en lytter. Dersom den enheten som sender dataen også er registrert som en lytter, vil man kunne sende data til den lokale noden. Dette kan være nyttig for å synkronisere data mellom f.eks. en service og en activity.</p>
+
+{% highlight java %}
+ArrayList<DataMap> dataMaps = new ArrayList<DataMap>();
+DataMap dataMap = new DataMap();
+dataMap.putString("key", value);
+// dataMap.putInt(…), dataMap.putBoolean(…), …
+dataMaps.add(dataMap);
+
+PutDataMapRequest putDataMapReq = PutDataMapRequest.create(UNIQUE_PATH);
+putDataMapReq.getDataMap().putDataMapArrayList("key", dataMaps);
+PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq)
+        .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override public void onResult(DataApi.DataItemResult dataItemResult) {
+                // Kall på dataItemResult.getStatus().isSuccess() for å se status på meldingen
+            }
+        });
+{% endhighlight %}
+
+<h4>Motta data</h4>
+
+<p>For å motta data må man først registrer seg som en lytter. Implementer interfacet <code>GoogleApiClient.ConnectionCallbacks</code> og kall <code>Wearable.DataApi.addListener(googleApiClient, this)</code> i <code>onConnected</code>.</p>
+
+<p>Deretter implementerer man interfacet <code>DataApi.DataListener</code> og overrider metoden <code>onDataChanged(DataEventBuffer dataEvents)</code></p>
+
+{% highlight java %}
+@Override
+public void onDataChanged(DataEventBuffer dataEvents) {
+    for (DataEvent dataEvent : dataEvents) {
+        if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
+            DataItem item = dataEvent.getDataItem();
+            if (item.getUri().getPath().equals(UNIQUE_PATH)) {
+                DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                ArrayList<DataMap> dataMapItems = dataMap.getDataMapArrayList("key");
+                // Iterer over dataMapItems og behandle dataen, f.eks. ved å oppdatere GUI
+            }
+        }
+    }
+}
+{% endhighlight %}
