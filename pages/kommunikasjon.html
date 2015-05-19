@@ -18,7 +18,110 @@
         <div class="row-fluid">
           <div class="span8">
             <h1 class="page-header">Kommunikasjon</h1>
-            
+            <p>For å kommunisere mellom mobilen og klokka bruker man <em>Wearable Data Layer APIet</em> som er en del av Google Play services. Dette APIet kan brukes til å synkronisere
+data og sende meldinger mellom enhetene. Vi skal se nærmere på hvordan man sender <code>Messages</code> og <code>DataItems</code>.</p>
+
+<p>Det første man trenger er en <code>GoogleApiClient</code>, Google Play services' klient. I sin enkleste form bygges den på følgende måte
+(se <a href="https://developer.android.com/google/auth/api-client.html">dokumentasjonen</a> for ytterligere forklaring på hvordan man bruker klienten):</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">GoogleApiClient</span> <span class="n">mGoogleApiClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">GoogleApiClient</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="k">this</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">addConnectionCallbacks</span><span class="o">(</span><span class="k">new</span> <span class="nf">ConnectionCallbacks</span><span class="o">()</span> <span class="o">{</span>
+            <span class="c1">// Implementasjon av onConnected og onConnectionSuspended</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">addOnConnectionFailedListener</span><span class="o">(</span><span class="k">new</span> <span class="nf">OnConnectionFailedListener</span><span class="o">()</span> <span class="o">{</span>
+            <span class="c1">// Implementasjon av onConnectionFailed</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">addApi</span><span class="o">(</span><span class="n">Wearable</span><span class="o">.</span><span class="na">API</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre></div>
+
+<p>Når du kaller på <code>mGoogleApiClient.connect()</code> (f.eks. i <code>onStart</code> som er definert i <code>Activity</code>) blir <code>onConnected</code> invokert, og klienten er klar til bruk.</p>
+
+<h3>Messages</h3>
+
+<p><code>Messages-APIet</code>brukes til enveiskommunikasjon fra en enhet til en annen. Det kan f.eks. brukes til å åpne en spesifikk activity på en annen enhet,
+og et annet eksempel kan være at en knapp på klokka sender en <code>Message</code> til telefonen som gjør at musikkavspilleren skifter til neste sang.</p>
+
+<p>En <code>Message</code> inneholder alltid en unik path som begynner med <code>/</code> som identifiserer meldingen. I tillegg kan man legge ved noe data i form av et <code>byte</code>-array.
+Dataen bør ikke overstige 100KB.</p>
+
+<h4>Send melding</h4>
+
+<p>Først må man finne ut hvilke noder som er tilkoblet enheten, ved å kalle på <code>getConnectedNodes(…)</code>:</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">PendingResult</span><span class="o">&lt;</span><span class="n">NodeApi</span><span class="o">.</span><span class="na">GetConnectedNodesResult</span><span class="o">&gt;</span> <span class="n">nodes</span> <span class="o">=</span> <span class="n">Wearable</span><span class="o">.</span><span class="na">NodeApi</span><span class="o">.</span><span class="na">getConnectedNodes</span><span class="o">(</span><span class="n">mGoogleApiClient</span><span class="o">);</span></code></pre></div>
+
+<p>Dette kallet returnerer et <code>PendingResult</code>. Resultatet kan hentes ved å kalle <code>await()</code>, som blokkerer til den får svar, eller ved å sende et objekt
+som implementerer interfacet <code>ResultCallback</code> til <code>setResultCallback(…)</code>, som utføres asynkront. <em>Legg forøvrig merke til at blokkerende kall
+aldri skal kjøres på UI-tråden. Les mer om bakgrunnstråder i <a href="https://bekk.github.io/android101/pages/working-in-the-background.html">Android 101-kurset</a>.</em></p>
+
+<p>Resultatet vil inneholde en liste med <code>Node</code>-objekter. Hent ut IDen til enheten du vil sende til, og kall <code>sendMessage(…)</code>:</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">Wearable</span><span class="o">.</span><span class="na">MessageApi</span><span class="o">.</span><span class="na">sendMessage</span><span class="o">(</span><span class="n">mGoogleApiClient</span><span class="o">,</span> <span class="n">nodeId</span><span class="o">,</span> <span class="n">UNIQUE_PATH</span><span class="o">,</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">0</span><span class="o">])</span>
+        <span class="o">.</span><span class="na">setResultCallback</span><span class="o">(</span><span class="k">new</span> <span class="n">ResultCallback</span><span class="o">&lt;</span><span class="n">MessageApi</span><span class="o">.</span><span class="na">SendMessageResult</span><span class="o">&gt;()</span> <span class="o">{</span>
+            <span class="nd">@Override</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onResult</span><span class="o">(</span><span class="n">MessageApi</span><span class="o">.</span><span class="na">SendMessageResult</span> <span class="n">sendMessageResult</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// Kall på sendMessageResult.getStatus().isSuccess() for å se status på meldingen</span>
+            <span class="o">}</span>
+        <span class="o">});</span></code></pre></div>
+
+<h4>Motta melding</h4>
+
+<p>Implementer <code>MessageListener</code>-interfacet og registrer klassen med metoden <code>Wearable.MessageApi.addListener(…)</code>.
+Du vil typisk sjekke hva pathen til messagen er, og handle deretter:</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onMessageReceived</span><span class="o">(</span><span class="n">MessageEvent</span> <span class="n">messageEvent</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">messageEvent</span><span class="o">.</span><span class="na">getPath</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="n">UNIQUE_PATH</span><span class="o">))</span> <span class="o">{</span>
+        <span class="c1">// Gjør noe, f.eks start en Activity</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></div>
+
+<h3>DataItems</h3>
+
+<p>For å synkronisere data mellom enheter, bruker man <code>DataItems</code>. Et <code>DataItem</code> inneholder – i likhet med en <code>Message</code> – en unik path som begynner med <code>/</code> i tillegg
+til et <code>byte</code>-array med data (maks 100KB).</p>
+
+<p>I stedet for å implementere <code>DataItem</code> direkte, vil man typisk bruke <code>DataMap</code>-klassen som lar oss manipulere data i key-value-par.
+<code>DataMap</code> vil også håndtere serialisering og deserialisering automatisk.</p>
+
+<h4>Send data</h4>
+
+<p>Koden under vil sende listen med <code>DataMap</code> til alle noder som er koblet til avsenderen, og som har registrert seg selv som en lytter. Dersom den enheten som sender dataen også er registrert som en lytter, vil man kunne sende data til den lokale noden. Dette kan være nyttig for å synkronisere data mellom f.eks. en service og en activity.</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">DataMap</span><span class="o">&gt;</span> <span class="n">dataMaps</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">DataMap</span><span class="o">&gt;();</span>
+<span class="n">DataMap</span> <span class="n">dataMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">DataMap</span><span class="o">();</span>
+<span class="n">dataMap</span><span class="o">.</span><span class="na">putString</span><span class="o">(</span><span class="s">&quot;key&quot;</span><span class="o">,</span> <span class="n">value</span><span class="o">);</span>
+<span class="c1">// dataMap.putInt(…), dataMap.putBoolean(…), …</span>
+<span class="n">dataMaps</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">dataMap</span><span class="o">);</span>
+
+<span class="n">PutDataMapRequest</span> <span class="n">putDataMapReq</span> <span class="o">=</span> <span class="n">PutDataMapRequest</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">UNIQUE_PATH</span><span class="o">);</span>
+<span class="n">putDataMapReq</span><span class="o">.</span><span class="na">getDataMap</span><span class="o">().</span><span class="na">putDataMapArrayList</span><span class="o">(</span><span class="s">&quot;key&quot;</span><span class="o">,</span> <span class="n">dataMaps</span><span class="o">);</span>
+<span class="n">PutDataRequest</span> <span class="n">putDataReq</span> <span class="o">=</span> <span class="n">putDataMapReq</span><span class="o">.</span><span class="na">asPutDataRequest</span><span class="o">();</span>
+<span class="n">Wearable</span><span class="o">.</span><span class="na">DataApi</span><span class="o">.</span><span class="na">putDataItem</span><span class="o">(</span><span class="n">mGoogleApiClient</span><span class="o">,</span> <span class="n">putDataReq</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">setResultCallback</span><span class="o">(</span><span class="k">new</span> <span class="n">ResultCallback</span><span class="o">&lt;</span><span class="n">DataApi</span><span class="o">.</span><span class="na">DataItemResult</span><span class="o">&gt;()</span> <span class="o">{</span>
+            <span class="nd">@Override</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onResult</span><span class="o">(</span><span class="n">DataApi</span><span class="o">.</span><span class="na">DataItemResult</span> <span class="n">dataItemResult</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// Kall på dataItemResult.getStatus().isSuccess() for å se status på meldingen</span>
+            <span class="o">}</span>
+        <span class="o">});</span></code></pre></div>
+
+<h4>Motta data</h4>
+
+<p>For å motta data må man først registrer seg som en lytter. Implementer interfacet <code>GoogleApiClient.ConnectionCallbacks</code> og kall <code>Wearable.DataApi.addListener(googleApiClient, this)</code> i <code>onConnected</code>.</p>
+
+<p>Deretter implementerer man interfacet <code>DataApi.DataListener</code> og overrider metoden <code>onDataChanged(DataEventBuffer dataEvents)</code></p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onDataChanged</span><span class="o">(</span><span class="n">DataEventBuffer</span> <span class="n">dataEvents</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">DataEvent</span> <span class="n">dataEvent</span> <span class="o">:</span> <span class="n">dataEvents</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">dataEvent</span><span class="o">.</span><span class="na">getType</span><span class="o">()</span> <span class="o">==</span> <span class="n">DataEvent</span><span class="o">.</span><span class="na">TYPE_CHANGED</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">DataItem</span> <span class="n">item</span> <span class="o">=</span> <span class="n">dataEvent</span><span class="o">.</span><span class="na">getDataItem</span><span class="o">();</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">item</span><span class="o">.</span><span class="na">getUri</span><span class="o">().</span><span class="na">getPath</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="n">UNIQUE_PATH</span><span class="o">))</span> <span class="o">{</span>
+                <span class="n">DataMap</span> <span class="n">dataMap</span> <span class="o">=</span> <span class="n">DataMapItem</span><span class="o">.</span><span class="na">fromDataItem</span><span class="o">(</span><span class="n">item</span><span class="o">).</span><span class="na">getDataMap</span><span class="o">();</span>
+                <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">DataMap</span><span class="o">&gt;</span> <span class="n">dataMapItems</span> <span class="o">=</span> <span class="n">dataMap</span><span class="o">.</span><span class="na">getDataMapArrayList</span><span class="o">(</span><span class="s">&quot;key&quot;</span><span class="o">);</span>
+                <span class="c1">// Iterer over dataMapItems og behandle dataen, f.eks. ved å oppdatere GUI</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></div>
 
           </div>
           <nav class="span4">
@@ -42,42 +145,13 @@
     
   
     
-      <li class=""><a href="/android-wear-kurs/pages/introduksjon.html">Introduksjon</a></li>
-    
-  
-    
-  
-    
-  
-    
-  
-
-
-  
-
-  
-    
-  
-
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
       <li class=""><a href="/android-wear-kurs/pages/komponenter.html">Komponenter</a></li>
     
   
     
   
+    
+  
 
 
   
@@ -86,10 +160,6 @@
     
   
 
-  
-    
-  
-    
   
     
   
@@ -105,20 +175,16 @@
   
     
   
-
-
-  
-
-  
     
+  
+
+
   
 
   
     
   
-    
-      <li class=""><a href="/android-wear-kurs/pages/eksempler.html">Eksempler</a></li>
-    
+
   
     
   
@@ -128,6 +194,10 @@
   
     
   
+    
+  
+    
+      <li class=""><a href="/android-wear-kurs/pages/notifications.html">Notifications</a></li>
     
   
     
@@ -146,8 +216,6 @@
     
   
 
-  
-    
   
     
   
@@ -173,8 +241,6 @@
     
   
 
-  
-    
   
     
   
