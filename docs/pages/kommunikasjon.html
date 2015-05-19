@@ -4,7 +4,7 @@ title: Kommunikasjon
 ---
 
 <p>For å kommunisere mellom mobilen og klokka bruker man <em>Wearable Data Layer APIet</em> som er en del av Google Play services. Dette APIet kan brukes til å synkronisere
-data og sende meldinger mellom enhetene. Vi skal se nærmere på hvordan man sender <code>Messages</code>, <code>DataItems</code> og <code>Assets</code>.</p>
+data og sende meldinger mellom enhetene. Vi skal se nærmere på hvordan man sender <code>Messages</code> og <code>DataItems</code>.</p>
 
 <p>Det første man trenger er en <code>GoogleApiClient</code>, Google Play services' klient. I sin enkleste form bygges den på følgende måte
 (se <a href="https://developer.android.com/google/auth/api-client.html">dokumentasjonen</a> for ytterligere forklaring på hvordan man bruker klienten):</p>
@@ -21,11 +21,11 @@ GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
         .build();
 {% endhighlight %}
 
-<p>Når du kaller på <code>mGoogleApiClient.connect()</code> blir <code>onConnected</code> invokert, og klienten er klar til bruk.</p>
+<p>Når du kaller på <code>mGoogleApiClient.connect()</code> (f.eks. i <code>onStart</code> som er definert i <code>Activity</code>) blir <code>onConnected</code> invokert, og klienten er klar til bruk.</p>
 
 <h3>Messages</h3>
 
-<p><code>Messages-APIet</code>brukes til enveiskommunikasjon fra en enhet til en annen. Det kan f.eks. brukes til å åpne en spesifikk <code>activity</code> på en annen enhet,
+<p><code>Messages-APIet</code>brukes til enveiskommunikasjon fra en enhet til en annen. Det kan f.eks. brukes til å åpne en spesifikk activity på en annen enhet,
 og et annet eksempel kan være at en knapp på klokka sender en <code>Message</code> til telefonen som gjør at musikkavspilleren skifter til neste sang.</p>
 
 <p>En <code>Message</code> inneholder alltid en unik path som begynner med <code>/</code> som identifiserer meldingen. I tillegg kan man legge ved noe data i form av et <code>byte</code>-array.
